@@ -1,0 +1,73 @@
+---
+import Base from '../../layouts/Base.astro';
+const faq = [
+  { q: 'How much can tire diameter change safely?', a: 'Tire shops generally keep a replacement within about 3% of the original overall diameter. Beyond that, speedometer error grows and the tire may rub, and ABS and stability control can be affected.' },
+  { q: 'Why does my speedometer read wrong with bigger tires?', a: 'A taller tire travels further per turn, so the car moves faster than the speedometer thinks. A 3% taller tire means you are doing about 61.8 mph when it shows 60.' },
+];
+const jsonLd = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faq.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) };
+---
+<Base title="Tire Size Comparison Calculator: Diameter, Width & Speedometer" description="Compare two tire sizes side by side: overall diameter, width, sidewall, revolutions per mile and speedometer error, with a check against the 3% rule." jsonLd={jsonLd}>
+  <section>
+    <h1>Tire size comparison</h1>
+    <p class="lede">Enter your current size and the one you're considering to see how they differ and what your speedometer will read.</p>
+    <form class="picker" id="cmp" style="align-items:end">
+      <label class="kv"><span class="label">Current size</span><input id="a" value="215/55R17" inputmode="text" autocomplete="off" /></label>
+      <label class="kv"><span class="label">New size</span><input id="b" value="225/50R17" inputmode="text" autocomplete="off" /></label>
+      <button class="btn" type="submit">Compare</button>
+    </form>
+    <p id="err" class="note small" hidden></p>
+  </section>
+  <section id="out" hidden>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th></th><th id="ha">Current</th><th id="hb">New</th><th>Change</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <p id="verdict" class="lede"></p>
+  </section>
+  <section class="faq">
+    <h2>Questions</h2>
+    {faq.map((f) => <div><h3>{f.q}</h3><p>{f.a}</p></div>)}
+    <p><a href="/how-to-read-tire-size/">How to read a tire size</a> · <a href="/makes/">Find your car's factory size</a></p>
+  </section>
+  <style is:global>
+    #cmp input { font: 600 18px/24px var(--font-mono); padding: 8px 10px; border-radius: var(--radius-sm); border: 1px solid var(--ink-muted); background: var(--surface-raised); color: var(--ink); width: 11ch; }
+    #cmp .kv { display: grid; gap: 4px; }
+    #out th, #out td { padding: 8px 6px; font-size: 14px; line-height: 20px; } #out th:first-child, #out td:first-child { padding-left: 12px; }
+    #rows th { white-space: normal; text-transform: none; letter-spacing: 0; color: var(--ink); font-weight: 600; }
+    #out thead th { white-space: normal; font-family: var(--font-mono); letter-spacing: 0; }
+  </style>
+  <script is:inline>
+    const RE = /^(P|LT)?(\d{3})\/(\d{2})Z?R(\d{2})$/;
+    const parse = (s) => { const m = s.replace(/\s+/g, '').toUpperCase().match(RE); return m && { w: +m[2], a: +m[3], r: +m[4], code: `${m[2]}/${m[3]}R${m[4]}` }; };
+    const calc = (t) => { const side = t.w * t.a / 100, dia = t.r * 25.4 + 2 * side; return { dia, side, w: t.w, circ: Math.PI * dia, revs: 1609344 / (Math.PI * dia) }; };
+    const inch = (mm) => (mm / 25.4).toFixed(2) + ' in';
+    const pct = (x, y) => { const p = (y / x - 1) * 100; return (p > 0 ? '+' : '') + p.toFixed(1) + '%'; };
+    function run(e) {
+      e && e.preventDefault();
+      const A = parse(document.getElementById('a').value), B = parse(document.getElementById('b').value);
+      const err = document.getElementById('err'), out = document.getElementById('out');
+      if (!A || !B) { err.textContent = 'Enter sizes like 215/55R17.'; err.hidden = false; out.hidden = true; return; }
+      err.hidden = true;
+      const a = calc(A), b = calc(B);
+      document.getElementById('ha').textContent = A.code; document.getElementById('hb').textContent = B.code;
+      const rows = [
+        ['Overall diameter', inch(a.dia), inch(b.dia), pct(a.dia, b.dia)],
+        ['Width', inch(a.w), inch(b.w), pct(a.w, b.w)],
+        ['Sidewall height', inch(a.side), inch(b.side), pct(a.side, b.side)],
+        ['Wheel size', A.r + ' in', B.r + ' in', B.r === A.r ? 'same' : (B.r - A.r > 0 ? '+' : '') + (B.r - A.r) + ' in'],
+        ['Revolutions per mile', Math.round(a.revs), Math.round(b.revs), pct(a.revs, b.revs)],
+        ['Real speed at 60 mph shown', '60.0 mph', (60 * b.dia / a.dia).toFixed(1) + ' mph', ''],
+      ];
+      document.getElementById('rows').innerHTML = rows.map((r) => `<tr><th scope="row">${r[0]}</th><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`).join('');
+      const d = Math.abs(b.dia / a.dia - 1) * 100;
+      document.getElementById('verdict').textContent = d <= 3
+        ? `${B.code} is within ${d.toFixed(1)}% of ${A.code} in diameter, inside the usual 3% guideline. Check the width clears your suspension and the load index is at least the original.`
+        : `${B.code} is ${d.toFixed(1)}% different in diameter, outside the usual 3% guideline. Speedometer, ABS and clearance may be affected; ask a tire shop before switching.`;
+      out.hidden = false;
+    }
+    document.getElementById('cmp').addEventListener('submit', run);
+    run();
+  </script>
+</Base>
