@@ -1,4 +1,4 @@
-// Domain recommended 2026-11-04 (cartiresizes.com); confirm Jon bought it. Change SITE_URL and SITE_NAME, then set PREVIEW to false to let Google in.
+// cartiresizes.com, bought by Jon on Cloudflare 2026-11-04. Change SITE_URL and SITE_NAME, then set PREVIEW to false to let Google in.
 export const SITE_URL = 'https://cartiresizes.com';
 export const SITE_NAME = 'Car Tire Sizes';
 // While true: every page is noindex, robots.txt blocks crawlers, and a banner says the data may be sample data.
