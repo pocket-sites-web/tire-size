@@ -1,0 +1,60 @@
+---
+import '../styles/tokens.css';
+import { SITE_NAME, PREVIEW } from '../lib/site';
+interface Props { title: string; description: string; jsonLd?: object; noindex?: boolean }
+const { title, description, jsonLd, noindex = false } = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const hide = noindex || PREVIEW;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    {hide ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={canonical} />}
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:type" content="website" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800&family=IBM+Plex+Mono:wght@600&family=Public+Sans:wght@400;600&display=swap" />
+    {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
+  </head>
+  <body>
+    {PREVIEW && <div class="preview-banner">Preview build. Data shown may be sample data and this site is hidden from search engines.</div>}
+    <header class="site-header">
+      <div class="wrap header-row">
+        <a class="brand" href="/">
+          <picture>
+            <source srcset="/mark-on-dark.svg" media="(prefers-color-scheme: dark)" />
+            <img src="/mark.svg" alt="" width="28" height="28" />
+          </picture>
+          <span>{SITE_NAME}</span>
+        </a>
+        <nav aria-label="Main">
+          <a href="/makes/">Makes</a>
+          <a href="/sizes/">Sizes</a>
+          <a href="/how-to-read-tire-size/">Read a tire size</a>
+        </nav>
+      </div>
+    </header>
+    <main class="wrap">
+      <slot />
+    </main>
+    <footer class="site-footer">
+      <div class="wrap footer-row">
+        <p class="small">Factory tire sizes from carmakers' owner's manuals. We may earn a commission when you buy through links on this site.</p>
+        <nav aria-label="Footer">
+          <a href="/about/">About</a>
+          <a href="/sources/">Sources and method</a>
+          <a href="/privacy/">Privacy</a>
+          <a href="/contact/">Contact</a>
+        </nav>
+      </div>
+    </footer>
+  </body>
+</html>

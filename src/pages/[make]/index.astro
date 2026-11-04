@@ -1,0 +1,23 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getMakes, yearRange, type Make } from '../../lib/data';
+export function getStaticPaths() {
+  return getMakes().map((mk) => ({ params: { make: mk.makeSlug }, props: { mk } }));
+}
+const { mk } = Astro.props as { mk: Make };
+---
+<Base title={`${mk.make} Tire Size by Model and Year`} description={`Factory tire sizes for every ${mk.make} model we cover (${mk.models.length} models), year by year, from ${mk.make} owner's manuals.`}>
+  <section>
+    <p class="crumbs"><a href="/makes/">Makes</a> / {mk.make}</p>
+    <h1>{mk.make} Tire Sizes</h1>
+    <p class="lede">Pick your {mk.make} for the factory tire size, pressure and spare for each year.</p>
+  </section>
+  <section>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Model</th><th>Years</th><th>Sizes</th></tr></thead>
+        <tbody>{mk.models.map((m) => <tr><td><a href={`/${m.makeSlug}/${m.modelSlug}/`}>{m.model}</a></td><td>{yearRange(m)}</td><td>{m.sizes.length}</td></tr>)}</tbody>
+      </table>
+    </div>
+  </section>
+</Base>

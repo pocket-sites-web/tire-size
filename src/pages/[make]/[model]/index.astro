@@ -1,0 +1,62 @@
+---
+import Base from '../../../layouts/Base.astro';
+import { getMakes, parseSize, listSizes, sizeHref, yearHref, yearRange, type Model } from '../../../lib/data';
+import { SITE_URL } from '../../../lib/site';
+
+export function getStaticPaths() {
+  return getMakes().flatMap((mk) => mk.models.map((m) => ({ params: { make: mk.makeSlug, model: m.modelSlug }, props: { m, siblings: mk.models } })));
+}
+const { m, siblings } = Astro.props as { m: Model; siblings: Model[] };
+const name = `${m.make} ${m.model}`;
+const range = yearRange(m);
+const latest = m.years[0];
+const latestCodes = [...new Set(latest.road.map((r) => parseSize(r.size)!.code))];
+const title = `${name} Tire Size by Year (${range}): Every Factory Size`;
+const description = `${name} tire sizes for every year from ${range}: ${listSizes(m.sizes.slice(0, 4))}${m.sizes.length > 4 ? ' and more' : ''}. Factory specs from the owner's manual.`;
+const jsonLd = [{ '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
+  { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_URL}/` },
+  { '@type': 'ListItem', position: 2, name: m.make, item: `${SITE_URL}/${m.makeSlug}/` },
+  { '@type': 'ListItem', position: 3, name: m.model, item: `${SITE_URL}/${m.makeSlug}/${m.modelSlug}/` },
+] }];
+---
+<Base title={title} description={description} jsonLd={jsonLd}>
+  <section>
+    <p class="crumbs"><a href={`/${m.makeSlug}/`}>{m.make}</a> / {m.model}</p>
+    <h1>{name} Tire Size ({range})</h1>
+    <p class="lede">The {latest.year} {name} takes <strong>{listSizes(latestCodes)}</strong>. Sizes change with the year and trim, so pick your year for the full spec, pressure and spare.</p>
+    <div class="picker">
+      <label class="label" for="year-pick">Your year</label>
+      <select id="year-pick" onchange="if(this.value)location.href=this.value">
+        <option value="">Select year</option>
+        {m.years.map((y) => <option value={yearHref(y)}>{y.year}</option>)}
+      </select>
+    </div>
+  </section>
+
+  <section>
+    <h2>Tire sizes by year</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Year</th><th>Factory sizes</th></tr></thead>
+        <tbody>
+          {m.years.map((y) => (
+            <tr>
+              <td><a href={yearHref(y)}>{y.year}</a></td>
+              <td><div class="chips">{y.road.map((r) => <span class="size-chip sm">{r.position === 'front' ? 'F ' : r.position === 'rear' ? 'R ' : ''}{parseSize(r.size)!.code}</span>)}</div></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Every size used on the {m.model}</h2>
+    <ul class="link-grid">{m.sizes.map((c) => <li><a href={sizeHref(c)}>{c}</a></li>)}</ul>
+  </section>
+
+  <section>
+    <h2>Other {m.make} models</h2>
+    <ul class="link-grid">{siblings.filter((s) => s.modelSlug !== m.modelSlug).map((s) => <li><a href={`/${s.makeSlug}/${s.modelSlug}/`}>{s.model}</a></li>)}</ul>
+  </section>
+</Base>

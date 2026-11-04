@@ -1,0 +1,35 @@
+---
+import { parseSize, dims, speedMph, loadLb, positionLabel, pressureText, sizeHref, type TireRow } from '../lib/data';
+import { amazonUrl } from '../lib/site';
+interface Props { row: TireRow; make: string; model: string; year: number }
+const { row, make, model, year } = Astro.props;
+const s = parseSize(row.size)!;
+const d = dims(s);
+const mph = speedMph(row.speed_rating);
+const lb = loadLb(row.load_index);
+const pressure = pressureText(row);
+const spare = row.position === 'spare';
+const service = row.load_index && row.speed_rating ? `${row.load_index}${row.speed_rating}` : null;
+---
+<div class="card">
+  <div class="card-top">
+    <a class="size-chip" href={spare ? undefined : sizeHref(s.code)}>{row.size}{service && <> {service}</>}</a>
+    <span class="label">{positionLabel(row.position)}{spare && ' (temporary)'}</span>
+  </div>
+  <dl class="facts">
+    <div><dt>Width</dt><dd>{s.width} mm ({d.widthIn} in)</dd></div>
+    <div><dt>Wheel</dt><dd>{s.rim} in{row.wheel && <> · {row.wheel}</>}</dd></div>
+    <div><dt>Overall diameter</dt><dd>{d.diameterIn} in</dd></div>
+    {pressure && <div><dt>Cold pressure</dt><dd>{pressure}</dd></div>}
+    {lb && <div><dt>Load index</dt><dd>{row.load_index} ({lb.toLocaleString('en-US')} lb)</dd></div>}
+    {mph && <div><dt>Speed rating</dt><dd>{row.speed_rating} (up to {mph} mph)</dd></div>}
+  </dl>
+  {row.trim_note && <p class="small muted">Manual note: “{row.trim_note}”</p>}
+  {!spare && (
+    <div class="btns">
+      <a class="btn" href={amazonUrl(`${s.code} tires`)} rel="sponsored nofollow noopener" target="_blank">Shop {s.code} tires</a>
+      <a class="btn ghost" href={sizeHref(s.code)}>Other cars on {s.code}</a>
+    </div>
+  )}
+  {spare && <p class="small muted">A temporary spare is for short trips at reduced speed, usually no faster than 50 mph. Follow the limit printed on the spare and in your manual, and replace the flat as soon as you can.</p>}
+</div>

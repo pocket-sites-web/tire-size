@@ -1,0 +1,20 @@
+---
+import Base from '../../layouts/Base.astro';
+import { SITE_NAME } from '../../lib/site';
+---
+<Base title={`Sources and Method | ${SITE_NAME}`} description="How we collect factory tire sizes from owner's manuals, and what the data does and doesn't cover.">
+  <section>
+    <h1>Sources and method</h1>
+    <p>Every size on this site comes from the specifications section of the carmaker's official owner's manual for that model year. We record each size it lists, the load index and speed rating where given, the recommended cold pressure, the spare tire, and the page number.</p>
+    <h2>What the data covers</h2>
+    <ul>
+      <li>Factory (original equipment) sizes for US-market vehicles.</li>
+      <li>Manuals usually list every size offered for a year without saying which trim gets which. Your tire's sidewall or the label on the driver's door jamb tells you which one is on your car.</li>
+      <li>Staggered setups (different front and rear sizes) are shown separately.</li>
+    </ul>
+    <h2>Calculated figures</h2>
+    <p>Overall diameter, sidewall height and revolutions per mile are calculated from the size code. They're nominal figures and real tires vary slightly by brand.</p>
+    <h2>Corrections</h2>
+    <p>If something looks wrong, please <a href="/contact/">tell us</a> with your car's year, model and the size on your tire.</p>
+  </section>
+</Base>

@@ -1,0 +1,58 @@
+---
+import Base from '../../layouts/Base.astro';
+const faq = [
+  { q: 'What does P mean on a tire size?', a: 'P stands for P-metric, a passenger car tire built to US standards. A size with no letter in front is Euro-metric. LT means light truck and T means a temporary spare.' },
+  { q: 'What does R mean on a tire?', a: 'R means radial construction, which almost every modern car tire uses. D means diagonal (bias-ply) and turns up mostly on temporary spares.' },
+  { q: 'Is a higher load index better?', a: 'A higher load index means the tire can carry more weight. Replacements should match or exceed the original load index, never go below it.' },
+  { q: 'Where is the tire size on my car?', a: 'On the tire sidewall, and on the label inside the driver’s door jamb, which also gives the recommended pressures. Your owner’s manual lists every factory size for the model year.' },
+];
+const jsonLd = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faq.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) };
+---
+<Base title="How to Read a Tire Size: What the Numbers on a Tire Mean" description="P225/60R17 98H explained: tire width, aspect ratio, construction, wheel size, load index and speed rating, with a full speed rating table." jsonLd={jsonLd}>
+  <section>
+    <h1>How to read a tire size</h1>
+    <p class="lede">The code on a tire's sidewall, like <strong>P225/60R17 98H</strong>, tells you its size, how much weight it carries and how fast it can safely go.</p>
+    <div class="decode" aria-label="P225/60R17 98H broken into parts"><span>P</span><span>225</span><span>/60</span><span>R</span><span>17</span><span>98</span><span>H</span></div>
+    <ul class="decode-legend">
+      <li><b>P</b>: tire type. P is a passenger tire, LT a light truck tire, T a temporary spare. No letter means a Euro-metric passenger tire.</li>
+      <li><b>225</b>: tread width in millimeters, sidewall to sidewall.</li>
+      <li><b>60</b>: aspect ratio. The sidewall is 60% as tall as the tire is wide (135 mm here).</li>
+      <li><b>R</b>: radial construction.</li>
+      <li><b>17</b>: wheel diameter in inches.</li>
+      <li><b>98</b>: load index. 98 means up to 750 kg (1,653 lb) per tire.</li>
+      <li><b>H</b>: speed rating. H means up to 130 mph.</li>
+    </ul>
+  </section>
+  <section>
+    <h2>Speed ratings</h2>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Rating</th><th>Max speed</th><th>Typical use</th></tr></thead>
+      <tbody>
+        <tr><td>M</td><td>81 mph</td><td>Temporary spares</td></tr>
+        <tr><td>Q</td><td>99 mph</td><td>Winter tires</td></tr>
+        <tr><td>S</td><td>112 mph</td><td>Family cars, minivans</td></tr>
+        <tr><td>T</td><td>118 mph</td><td>Family cars, minivans</td></tr>
+        <tr><td>H</td><td>130 mph</td><td>Sedans, crossovers</td></tr>
+        <tr><td>V</td><td>149 mph</td><td>Sport sedans</td></tr>
+        <tr><td>W</td><td>168 mph</td><td>Performance cars</td></tr>
+        <tr><td>Y</td><td>186 mph</td><td>High-performance cars</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+  <section>
+    <h2>Other markings you'll see</h2>
+    <ul>
+      <li><b>DOT code</b>: ends in four digits giving the week and year it was made. 2524 means week 25 of 2024.</li>
+      <li><b>XL</b> or <b>Extra Load</b>: a reinforced tire rated to carry more at a higher pressure.</li>
+      <li><b>M+S</b>: mud and snow. The three-peak mountain snowflake symbol means it passed a severe-snow test.</li>
+      <li><b>Max pressure</b>: the most the tire can hold, not the pressure to run. Use the figure on your door-jamb label.</li>
+    </ul>
+  </section>
+  <section class="faq">
+    <h2>Questions</h2>
+    {faq.map((f) => <div><h3>{f.q}</h3><p>{f.a}</p></div>)}
+  </section>
+  <section>
+    <p><a href="/makes/">Find the factory tire size for your car</a></p>
+  </section>
+</Base>
