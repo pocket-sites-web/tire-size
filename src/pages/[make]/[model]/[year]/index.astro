@@ -1,0 +1,82 @@
+---
+import Base from '../../../../layouts/Base.astro';
+import SizeCard from '../../../../components/SizeCard.astro';
+import Source from '../../../../components/Source.astro';
+import { getModels, parseSize, listSizes, yearHref, pressureText, type Model, type YearPage } from '../../../../lib/data';
+import { SITE_URL } from '../../../../lib/site';
+
+export function getStaticPaths() {
+  return getModels().flatMap((m) =>
+    m.years.map((y) => ({ params: { make: m.makeSlug, model: m.modelSlug, year: String(y.year) }, props: { y, m } })),
+  );
+}
+const { y, m } = Astro.props as { y: YearPage; m: Model };
+const name = `${y.year} ${y.make} ${y.model}`;
+const codes = [...new Set(y.road.map((r) => parseSize(r.size)!.code))];
+const one = codes.length === 1;
+const front = y.road.filter((r) => r.position === 'front').map((r) => parseSize(r.size)!.code);
+const rear = y.road.filter((r) => r.position === 'rear').map((r) => parseSize(r.size)!.code);
+const pressures = [...new Set(y.road.map(pressureText).filter(Boolean))];
+const answer = y.staggered
+  ? `The ${name} uses different sizes front and rear: ${listSizes([...new Set(front)])} at the front and ${listSizes([...new Set(rear)])} at the rear.`
+  : one
+    ? `The ${name} takes ${codes[0]} tires.`
+    : `The ${name} came with ${listSizes(codes)} tires, depending on the trim and wheel size.`;
+const title = one && !y.staggered
+  ? `${name} Tire Size: ${codes[0]} (Factory Spec & Pressure)`
+  : `${name} Tire Size: ${codes.length} Factory Sizes & Pressures`;
+const description = `${answer} Factory sizes, load and speed ratings${pressures.length ? ', tire pressure' : ''} and spare from the owner's manual.`;
+const idx = m.years.findIndex((x) => x.year === y.year);
+const near = m.years.slice(Math.max(0, idx - 4), idx + 5);
+const faq = [
+  { q: `What size tires does a ${name} have?`, a: answer },
+  !one || y.staggered
+    ? { q: `Which size is on my ${name}?`, a: `Look at the sidewall of one of your tires: the size is the code that looks like ${codes[0]}. The label on the driver's door jamb also lists the original size and pressure for your exact trim.` }
+    : null,
+  pressures.length ? { q: `What tire pressure does a ${name} need?`, a: `The manual gives ${listSizes(pressures as string[])} cold. Check it before driving, and go by the door-jamb label if it differs, because that is set for your exact car.` } : null,
+  { q: `Can I fit a different tire size on my ${name}?`, a: `Stick to a factory size for your wheel unless a tire shop confirms the swap. A different overall diameter changes speedometer readings and can upset ABS and stability control, and the load index must be at least the original.` },
+].filter(Boolean) as { q: string; a: string }[];
+const jsonLd = [
+  { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faq.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) },
+  { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_URL}/` },
+    { '@type': 'ListItem', position: 2, name: y.make, item: `${SITE_URL}/${y.makeSlug}/` },
+    { '@type': 'ListItem', position: 3, name: y.model, item: `${SITE_URL}/${y.makeSlug}/${y.modelSlug}/` },
+    { '@type': 'ListItem', position: 4, name: String(y.year), item: `${SITE_URL}${yearHref(y)}` },
+  ] },
+];
+---
+<Base title={title} description={description} jsonLd={jsonLd}>
+  <section>
+    <p class="crumbs"><a href={`/${y.makeSlug}/`}>{y.make}</a> / <a href={`/${y.makeSlug}/${y.modelSlug}/`}>{y.model}</a> / {y.year}</p>
+    <h1>{name} Tire Size</h1>
+    <p class="lede">{answer}{pressures.length > 0 && <> Recommended cold pressure: <strong>{pressures.join(' / ')}</strong>.</>}</p>
+    {(!one || y.staggered) && <p>Not sure which one you have? Read the size off your tire's sidewall, or check the label on the driver's door jamb. <a href="/how-to-read-tire-size/">How to read a tire size</a>.</p>}
+    <Source y={y} />
+  </section>
+
+  <section>
+    <h2>Factory tire sizes</h2>
+    <div class="cards">{y.road.map((r) => <SizeCard row={r} make={y.make} model={y.model} year={y.year} />)}</div>
+  </section>
+
+  {y.spare.length > 0 && (
+    <section>
+      <h2>Spare tire</h2>
+      <div class="cards">{y.spare.map((r) => <SizeCard row={r} make={y.make} model={y.model} year={y.year} />)}</div>
+    </section>
+  )}
+
+  <section class="faq">
+    <h2>Questions</h2>
+    {faq.map((f) => <div><h3>{f.q}</h3><p>{f.a}</p></div>)}
+  </section>
+
+  <section>
+    <h2>Other {y.make} {y.model} years</h2>
+    <ul class="year-links">
+      {near.map((x) => <li><a href={yearHref(x)} aria-current={x.year === y.year ? 'page' : undefined}>{x.year}</a></li>)}
+    </ul>
+    <p><a href={`/${y.makeSlug}/${y.modelSlug}/`}>All {y.make} {y.model} tire sizes by year</a></p>
+  </section>
+</Base>

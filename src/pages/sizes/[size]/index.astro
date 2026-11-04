@@ -1,0 +1,62 @@
+---
+import Base from '../../../layouts/Base.astro';
+import { getSizes, dims, yearHref, type Size, type YearPage } from '../../../lib/data';
+import { amazonUrl } from '../../../lib/site';
+export function getStaticPaths() {
+  return getSizes().map((e) => ({ params: { size: e.size.slug }, props: e }));
+}
+const { size: s, uses } = Astro.props as { size: Size; uses: YearPage[] };
+const d = dims(s);
+// Group model-years into model rows with year spans.
+const byModel = new Map<string, YearPage[]>();
+for (const y of uses) {
+  const k = `${y.make}|${y.model}`;
+  if (!byModel.has(k)) byModel.set(k, []);
+  byModel.get(k)!.push(y);
+}
+const rows = [...byModel.values()]
+  .map((ys) => ys.sort((a, b) => a.year - b.year))
+  .sort((a, b) => a[0].make.localeCompare(b[0].make) || a[0].model.localeCompare(b[0].model));
+const title = `${s.code} Tire Size: Dimensions & Which Cars Use It`;
+const description = `${s.code} tires are ${d.diameterIn} in tall and ${d.widthIn} in wide on a ${s.rim} in wheel. See which ${rows.length > 1 ? `${rows.length} models` : 'cars'} came with ${s.code} from the factory.`;
+---
+<Base title={title} description={description}>
+  <section>
+    <p class="crumbs"><a href="/sizes/">Tire sizes</a> / {s.code}</p>
+    <h1>{s.code} Tire Size</h1>
+    <div class="decode" aria-label={`${s.code} broken into parts`}><span>{s.prefix === 'P' ? '' : s.prefix}{s.width}</span><span>/{s.aspect}</span><span>{s.construction}</span><span>{s.rim}</span></div>
+    <ul class="decode-legend">
+      <li><b>{s.width}</b>: tread width of {s.width} mm ({d.widthIn} in)</li>
+      <li><b>{s.aspect}</b>: sidewall height is {s.aspect}% of the width, about {d.sidewallMm} mm</li>
+      <li><b>{s.construction}</b>: {s.construction === 'R' ? 'radial construction' : 'diagonal (bias-ply) construction, common on temporary spares'}</li>
+      <li><b>{s.rim}</b>: fits a {s.rim}-inch wheel</li>
+    </ul>
+  </section>
+  <section>
+    <h2>Dimensions</h2>
+    <div class="table-wrap">
+      <table><tbody>
+        <tr><th>Overall diameter</th><td>{d.diameterIn} in ({d.diameterMm} mm)</td></tr>
+        <tr><th>Section width</th><td>{d.widthIn} in ({s.width} mm)</td></tr>
+        <tr><th>Sidewall height</th><td>{(d.sidewallMm / 25.4).toFixed(1)} in ({d.sidewallMm} mm)</td></tr>
+        <tr><th>Wheel diameter</th><td>{s.rim} in</td></tr>
+        <tr><th>Revolutions per mile</th><td>about {d.revsPerMile}</td></tr>
+      </tbody></table>
+    </div>
+    <p class="small muted">Nominal figures calculated from the size code. Real tires vary a little by brand and tread depth.</p>
+    <div class="btns"><a class="btn" href={amazonUrl(`${s.code} tires`)} rel="sponsored nofollow noopener" target="_blank">Shop {s.code} tires</a></div>
+  </section>
+  <section>
+    <h2>Cars that came with {s.code} tires</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Vehicle</th><th>Years</th></tr></thead>
+        <tbody>{rows.map((ys) => (
+          <tr><td><a href={`/${ys[0].makeSlug}/${ys[0].modelSlug}/`}>{ys[0].make} {ys[0].model}</a></td>
+          <td><ul class="year-links">{ys.map((y) => <li><a href={yearHref(y)}>{y.year}</a></li>)}</ul></td></tr>
+        ))}</tbody>
+      </table>
+    </div>
+    <p class="small muted">Factory fitment only, from owner's manuals. Many other cars can run this size; check with a tire shop before changing size.</p>
+  </section>
+</Base>

@@ -1,0 +1,60 @@
+---
+import Base from '../layouts/Base.astro';
+import { getMakes, getModels, getSizes, sizeHref } from '../lib/data';
+import { SITE_NAME, SITE_URL } from '../lib/site';
+const makes = getMakes();
+const picker = makes.map((mk) => ({ s: mk.makeSlug, n: mk.make, m: mk.models.map((m) => ({ s: m.modelSlug, n: m.model, y: m.years.map((y) => y.year) })) }));
+const popularNames = ['Camry', 'Corolla', 'RAV4', 'Altima', 'Rogue', 'Highlander', 'Tacoma', 'Sentra', 'Tucson', 'Elantra', 'Santa Fe', 'RX', 'Pathfinder', 'Tundra', 'Sienna', 'Murano'];
+const popular = popularNames.map((n) => getModels().find((m) => m.model === n)).filter(Boolean);
+const sizes = getSizes().sort((a, b) => b.uses.length - a.uses.length).slice(0, 12);
+const jsonLd = [{ '@context': 'https://schema.org', '@type': 'WebSite', name: SITE_NAME, url: `${SITE_URL}/` }];
+---
+<Base title="What Size Tires Does My Car Take? Tire Size by Vehicle" description="Find your car's factory tire size by make, model and year, with pressure, load and speed ratings and the spare, taken from the owner's manual." jsonLd={jsonLd}>
+  <section>
+    <h1 style="font-size:42px;line-height:46px">What size tires does your car take?</h1>
+    <p class="lede">Pick your car to see every factory tire size for that year, with the pressure, load and speed rating and spare, straight from the owner's manual.</p>
+    <form class="picker" id="finder">
+      <select id="make" aria-label="Make"><option value="">Make</option>{makes.map((mk) => <option value={mk.makeSlug}>{mk.make}</option>)}</select>
+      <select id="model" aria-label="Model" disabled><option value="">Model</option></select>
+      <select id="year" aria-label="Year" disabled><option value="">Year</option></select>
+      <button class="btn" type="submit">Find tire size</button>
+    </form>
+  </section>
+  {popular.length > 0 && (
+    <section>
+      <h2>Popular models</h2>
+      <ul class="link-grid">{popular.map((m) => <li><a href={`/${m!.makeSlug}/${m!.modelSlug}/`}>{m!.make} {m!.model}</a></li>)}</ul>
+    </section>
+  )}
+  <section>
+    <h2>Why trust these sizes</h2>
+    <p>Most tire size lookups are copied from retailer catalogs. We read the carmaker's own owner's manual for each model year and record every size it lists, with the page number, so you can check it yourself. <a href="/sources/">How we collect the data</a>.</p>
+  </section>
+  <section>
+    <h2>Browse by make</h2>
+    <ul class="link-grid">{makes.map((mk) => <li><a href={`/${mk.makeSlug}/`}>{mk.make}</a></li>)}</ul>
+  </section>
+  <section>
+    <h2>Common sizes</h2>
+    <ul class="link-grid">{sizes.map((s) => <li><a class="size-chip sm" href={sizeHref(s.size.code)}>{s.size.code}</a></li>)}</ul>
+    <p><a href="/sizes/">All tire sizes</a> · <a href="/how-to-read-tire-size/">What the numbers on a tire mean</a></p>
+  </section>
+  <script is:inline define:vars={{ picker }}>
+    const make = document.getElementById('make'), model = document.getElementById('model'), year = document.getElementById('year');
+    const fill = (el, label, opts) => { el.innerHTML = `<option value="">${label}</option>` + opts.join(''); el.disabled = !opts.length; };
+    make.addEventListener('change', () => {
+      const mk = picker.find((p) => p.s === make.value);
+      fill(model, 'Model', mk ? mk.m.map((m) => `<option value="${m.s}">${m.n}</option>`) : []);
+      fill(year, 'Year', []);
+    });
+    model.addEventListener('change', () => {
+      const m = picker.find((p) => p.s === make.value)?.m.find((x) => x.s === model.value);
+      fill(year, 'Year', m ? m.y.map((y) => `<option>${y}</option>`) : []);
+    });
+    document.getElementById('finder').addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (!make.value) return;
+      location.href = `/${make.value}/` + (model.value ? `${model.value}/` + (year.value ? `${year.value}/` : '') : '');
+    });
+  </script>
+</Base>

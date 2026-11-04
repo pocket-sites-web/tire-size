@@ -1,0 +1,11 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getMakes } from '../../lib/data';
+const makes = getMakes();
+---
+<Base title="Tire Size by Car Make" description="Choose your car's make to find factory tire sizes by model and year.">
+  <section>
+    <h1>Tire sizes by make</h1>
+    <ul class="link-grid">{makes.map((mk) => <li><a href={`/${mk.makeSlug}/`}>{mk.make}</a> <span class="small muted">{mk.models.length} models</span></li>)}</ul>
+  </section>
+</Base>

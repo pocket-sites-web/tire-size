@@ -1,0 +1,13 @@
+---
+import type { YearPage } from '../lib/data';
+interface Props { y: YearPage }
+const { y } = Astro.props;
+const rows = [...y.road, ...y.spare];
+const pages = [...new Set(rows.map((r) => r.page).filter(Boolean))];
+const url = rows.find((r) => r.source_url)?.source_url;
+const label = `${y.year} ${y.make} ${y.model} owner's manual${pages.length ? `, p. ${pages.join(', ')}` : ''}`;
+---
+<p class="src">
+  {y.sample ? <span class="ok">Sample data</span> : <span class="ok">✓ From the manual</span>} ·
+  {url ? <a href={url} rel="nofollow noopener" target="_blank">{label}</a> : label}
+</p>

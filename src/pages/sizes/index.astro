@@ -1,0 +1,19 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getSizes, sizeHref } from '../../lib/data';
+const sizes = getSizes();
+const byRim = new Map<number, typeof sizes>();
+for (const e of sizes) { if (!byRim.has(e.size.rim)) byRim.set(e.size.rim, []); byRim.get(e.size.rim)!.push(e); }
+---
+<Base title="Tire Sizes: Dimensions and Which Cars Use Each Size" description="Every factory tire size in our data, grouped by wheel size, with dimensions and the cars that use it.">
+  <section>
+    <h1>Tire sizes</h1>
+    <p class="lede">Every factory size we've found in owner's manuals, grouped by wheel diameter.</p>
+  </section>
+  {[...byRim.entries()].map(([rim, list]) => (
+    <section>
+      <h2>{rim}-inch wheels</h2>
+      <ul class="link-grid">{list.map((e) => <li><a class="size-chip sm" href={sizeHref(e.size.code)}>{e.size.code}</a> <span class="small muted">{e.uses.length} model-years</span></li>)}</ul>
+    </section>
+  ))}
+</Base>
