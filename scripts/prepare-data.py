@@ -19,6 +19,19 @@ def norm_size(s):
     m = SIZE.match(s)
     return s if m else None
 
+KEEP_UPPER = {'GT', 'EV', 'HEV', 'PHEV', 'SUV', 'XL', 'N', 'LX', 'GX', 'RX', 'NX', 'UX', 'IS', 'ES', 'GS', 'LS', 'LC', 'RC', 'RZ', 'TX', 'LM', 'GTI', 'SE', 'LE', 'XLE', 'II', 'III', 'IV', 'FR-S', 'GR', 'GR86', 'BZ4X', 'C-HR', 'CR-V', 'HR-V', 'GT-R', 'NV', 'NV200', 'K5', 'K900', 'EV6', 'EV9'}
+
+def norm_model(m):
+    """Title-case all-caps model names (ELANTRA -> Elantra, SANTA FE -> Santa Fe) but keep codes like RAV4, CR-V, GS."""
+    m = re.sub(r'\s+', ' ', m.strip())
+    if m != m.upper() or not re.search('[A-Z]{4,}', m):
+        return m
+    def word(w):
+        if w in KEEP_UPPER or re.search(r'\d', w):
+            return w
+        return '-'.join(p.capitalize() for p in w.split('-'))
+    return ' '.join(word(w) for w in m.split(' '))
+
 def num(v):
     try:
         return int(round(float(v))) if v not in (None, '') else None
@@ -38,7 +51,7 @@ def main(src):
         if pos not in POS: pos = 'all'
         if size.startswith('T'): pos = 'spare'
         clean = {
-            'make': r['make'].strip(), 'model': r['model'].strip(), 'year': year, 'size': size,
+            'make': r['make'].strip().title() if r['make'].isupper() else r['make'].strip(), 'model': norm_model(r['model']), 'year': year, 'size': size,
             'load_index': str(r['load_index']).strip() if r.get('load_index') else None,
             'speed_rating': (r.get('speed_rating') or '').strip().upper() or None,
             'position': pos,
