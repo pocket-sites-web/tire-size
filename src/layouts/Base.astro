@@ -5,6 +5,7 @@ interface Props { title: string; description: string; jsonLd?: object; noindex?:
 const { title, description, jsonLd, noindex = false } = Astro.props;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const hide = noindex || PREVIEW;
+const ogImage = new URL('/og.png', Astro.site);
 ---
 <!doctype html>
 <html lang="en">
@@ -19,6 +20,9 @@ const hide = noindex || PREVIEW;
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
     <meta property="og:type" content="website" />
+    <meta property="og:image" content={ogImage} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content={ogImage} />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800&family=IBM+Plex+Mono:wght@600&family=Public+Sans:wght@400;600&display=swap" />
@@ -39,6 +43,7 @@ const hide = noindex || PREVIEW;
           <a href="/makes/">Makes</a>
           <a href="/sizes/">Sizes</a>
           <a href="/how-to-read-tire-size/">Read a tire size</a>
+          <a href="/tire-size-comparison/">Compare sizes</a>
         </nav>
       </div>
     </header>
