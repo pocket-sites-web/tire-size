@@ -209,3 +209,18 @@ export function pressureText(r: TireRow): string | null {
   if (f || b) return `${f ?? b} psi`;
   return null;
 }
+
+const span = (v: number[]) => {
+  const lo = Math.min(...v), hi = Math.max(...v);
+  return lo === hi ? `${lo} psi` : `${lo} to ${hi} psi`;
+};
+
+// One short pressure line for a whole model-year (sizes can differ by a psi or two).
+export function pressureSummary(rows: TireRow[]): string | null {
+  const texts = [...new Set(rows.map(pressureText).filter(Boolean))] as string[];
+  if (texts.length <= 1) return texts[0] ?? null;
+  const f = rows.map((r) => r.pressure_psi_front ?? r.pressure_psi_rear).filter((v): v is number => !!v);
+  const b = rows.map((r) => r.pressure_psi_rear ?? r.pressure_psi_front).filter((v): v is number => !!v);
+  const same = rows.every((r) => !r.pressure_psi_front || !r.pressure_psi_rear || r.pressure_psi_front === r.pressure_psi_rear);
+  return same ? `${span(f)} depending on size` : `${span(f)} front, ${span(b)} rear depending on size`;
+}

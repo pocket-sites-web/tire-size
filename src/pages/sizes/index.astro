@@ -13,7 +13,7 @@ for (const e of sizes) { if (!byRim.has(e.size.rim)) byRim.set(e.size.rim, []); 
   {[...byRim.entries()].map(([rim, list]) => (
     <section>
       <h2>{rim}-inch wheels</h2>
-      <ul class="link-grid">{list.map((e) => <li><a class="size-chip sm" href={sizeHref(e.size.code)}>{e.size.code}</a> <span class="small muted">{e.uses.length} model-years</span></li>)}</ul>
+      <ul class="link-grid">{list.map((e) => <li><a class="size-chip sm" href={sizeHref(e.size.code)}>{e.size.code}</a> <span class="small muted">{e.uses.length} model-year{e.uses.length === 1 ? '' : 's'}</span></li>)}</ul>
     </section>
   ))}
 </Base>

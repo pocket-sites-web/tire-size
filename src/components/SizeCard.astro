@@ -9,6 +9,8 @@ const mph = speedMph(row.speed_rating);
 const lb = loadLb(row.load_index);
 const pressure = pressureText(row);
 const spare = row.position === 'spare';
+// Toyota/Lexus 'Type A' labels only make sense next to the manual's own table, so hide them.
+const note = row.trim_note && !/\bType [A-Z]\b/.test(row.trim_note) ? row.trim_note : null;
 const service = row.load_index && row.speed_rating ? `${row.load_index}${row.speed_rating}` : null;
 ---
 <div class="card">
@@ -24,7 +26,7 @@ const service = row.load_index && row.speed_rating ? `${row.load_index}${row.spe
     {lb && <div><dt>Load index</dt><dd>{row.load_index} ({lb.toLocaleString('en-US')} lb)</dd></div>}
     {mph && <div><dt>Speed rating</dt><dd>{row.speed_rating} (up to {mph} mph)</dd></div>}
   </dl>
-  {row.trim_note && <p class="small muted">Manual note: “{row.trim_note}”</p>}
+  {note && <p class="small muted">Fitted to: {note}</p>}
   {!spare && (
     <div class="btns">
       <a class="btn" href={amazonUrl(`${s.code} tires`)} rel="sponsored nofollow noopener" target="_blank">Shop {s.code} tires</a>

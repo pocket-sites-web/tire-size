@@ -2,7 +2,7 @@
 import Base from '../../../../layouts/Base.astro';
 import SizeCard from '../../../../components/SizeCard.astro';
 import Source from '../../../../components/Source.astro';
-import { getModels, parseSize, listSizes, yearHref, pressureText, type Model, type YearPage } from '../../../../lib/data';
+import { getModels, parseSize, listSizes, yearHref, pressureSummary, type Model, type YearPage } from '../../../../lib/data';
 import { SITE_URL } from '../../../../lib/site';
 
 export function getStaticPaths() {
@@ -16,7 +16,7 @@ const codes = [...new Set(y.road.map((r) => parseSize(r.size)!.code))];
 const one = codes.length === 1;
 const front = y.road.filter((r) => r.position === 'front').map((r) => parseSize(r.size)!.code);
 const rear = y.road.filter((r) => r.position === 'rear').map((r) => parseSize(r.size)!.code);
-const pressures = [...new Set(y.road.map(pressureText).filter(Boolean))];
+const pressure = pressureSummary(y.road);
 const answer = y.staggered
   ? `The ${name} uses different sizes front and rear: ${listSizes([...new Set(front)])} at the front and ${listSizes([...new Set(rear)])} at the rear.`
   : one
@@ -25,7 +25,7 @@ const answer = y.staggered
 const title = one && !y.staggered
   ? `${name} Tire Size: ${codes[0]} (Factory Spec & Pressure)`
   : `${name} Tire Size: ${codes.length} Factory Sizes & Pressures`;
-const description = `${answer} Factory sizes, load and speed ratings${pressures.length ? ', tire pressure' : ''} and spare from the owner's manual.`;
+const description = `${answer} Factory sizes, load and speed ratings${pressure ? ', tire pressure' : ''} and spare from the owner's manual.`;
 const idx = m.years.findIndex((x) => x.year === y.year);
 const near = m.years.slice(Math.max(0, idx - 4), idx + 5);
 const faq = [
@@ -33,7 +33,7 @@ const faq = [
   !one || y.staggered
     ? { q: `Which size is on my ${name}?`, a: `Look at the sidewall of one of your tires: the size is the code that looks like ${codes[0]}. The label on the driver's door jamb also lists the original size and pressure for your exact trim.` }
     : null,
-  pressures.length ? { q: `What tire pressure does a ${name} need?`, a: `The manual gives ${listSizes(pressures as string[])} cold. Check it before driving, and go by the door-jamb label if it differs, because that is set for your exact car.` } : null,
+  pressure ? { q: `What tire pressure does a ${name} need?`, a: `The manual gives ${pressure}, measured with the tires cold. Check it before driving, and go by the door-jamb label if it differs, because that is set for your exact car.` } : null,
   { q: `Can I fit a different tire size on my ${name}?`, a: `Stick to a factory size for your wheel unless a tire shop confirms the swap. A different overall diameter changes speedometer readings and can upset ABS and stability control, and the load index must be at least the original.` },
 ].filter(Boolean) as { q: string; a: string }[];
 const jsonLd = [
@@ -50,7 +50,7 @@ const jsonLd = [
   <section>
     <p class="crumbs"><a href={`/${y.makeSlug}/`}>{y.make}</a> / <a href={`/${y.makeSlug}/${y.modelSlug}/`}>{y.model}</a> / {y.year}</p>
     <h1>{name} Tire Size</h1>
-    <p class="lede">{answer}{pressures.length > 0 && <> Recommended cold pressure: <strong>{pressures.join(' / ')}</strong>.</>}</p>
+    <p class="lede">{answer}{pressure && <> Recommended cold pressure: <strong>{pressure}</strong>.</>}</p>
     {(!one || y.staggered) && <p>Not sure which one you have? Read the size off your tire's sidewall, or check the label on the driver's door jamb. <a href="/how-to-read-tire-size/">How to read a tire size</a>.</p>}
     <Source y={y} />
   </section>

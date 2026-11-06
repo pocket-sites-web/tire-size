@@ -19,6 +19,27 @@ def norm_size(s):
     m = SIZE.match(s)
     return s if m else None
 
+KEEP_UPPER = {'GT', 'EV', 'HEV', 'PHEV', 'SUV', 'XL', 'N', 'LX', 'GX', 'RX', 'NX', 'UX', 'IS', 'ES', 'GS', 'LS', 'LC', 'RC', 'RZ', 'TX', 'LM', 'GTI', 'SE', 'LE', 'XLE', 'II', 'III', 'IV', 'FR-S', 'GR', 'GR86', 'BZ4X', 'C-HR', 'CR-V', 'HR-V', 'GT-R', 'NV', 'NV200', 'K5', 'K900', 'EV6', 'EV9'}
+
+ALIASES = {'Rav Plug In Hybrid': 'RAV4 Plug-in Hybrid', 'BZ': 'bZ', 'BZ4X': 'bZ4X', 'BZ Woodland': 'bZ Woodland'}
+
+def norm_model(m):
+    """Tidy model names as printed: ELANTRA Hybrid -> Elantra Hybrid, NEXO fuel cell -> Nexo Fuel Cell,
+    Plugin -> Plug-in, Lexus ESh -> ES Hybrid. Codes like RAV4, CR-V, GS stay as they are."""
+    m = re.sub(r'\s+', ' ', m.strip())
+    m = ALIASES.get(m, m)
+    if re.fullmatch(r'[A-Z]{2}h', m):
+        m = m[:2] + ' Hybrid'
+    words = m.split(' ')
+    if any(w not in KEEP_UPPER and re.fullmatch(r'[A-Z][A-Z-]{3,}', w) for w in words):
+        def word(w):
+            if w in KEEP_UPPER or re.search(r'\d', w):
+                return w
+            return '-'.join(p.capitalize() for p in w.split('-'))
+        m = ' '.join(word(w) for w in words)
+    m = re.sub(r'\bPlug-?in\b', 'Plug-in', m, flags=re.I)
+    return ALIASES.get(m, m)
+
 def num(v):
     try:
         return int(round(float(v))) if v not in (None, '') else None
@@ -38,7 +59,7 @@ def main(src):
         if pos not in POS: pos = 'all'
         if size.startswith('T'): pos = 'spare'
         clean = {
-            'make': r['make'].strip(), 'model': r['model'].strip(), 'year': year, 'size': size,
+            'make': r['make'].strip().title() if r['make'].isupper() else r['make'].strip(), 'model': norm_model(r['model']), 'year': year, 'size': size,
             'load_index': str(r['load_index']).strip() if r.get('load_index') else None,
             'speed_rating': (r.get('speed_rating') or '').strip().upper() or None,
             'position': pos,
@@ -53,6 +74,8 @@ def main(src):
         # Implausible pressures are extraction noise.
         for k in ('pressure_psi_front', 'pressure_psi_rear'):
             if clean[k] is not None and not (20 <= clean[k] <= 80): clean[k] = None
+            # 60 psi on a passenger (non-LT) road tire is the temporary spare's pressure bleeding into the row.
+            if clean[k] is not None and clean[k] >= 50 and pos != 'spare' and not size.startswith('LT'): clean[k] = None
         key = (clean['make'], clean['model'], year, size.lstrip('P'), pos)
         if key not in out or clean['confidence'] > out[key]['confidence']:
             if key in out: dropped['duplicate'] += 1
