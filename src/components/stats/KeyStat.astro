@@ -1,0 +1,13 @@
+---
+// One headline statistic with its own anchor, so writers can link straight to it.
+interface Props { id: string; value: string; source?: string }
+const { id, value, source } = Astro.props;
+---
+<li class="kstat" id={id}>
+  <p class="kstat-value">{value}</p>
+  <p class="kstat-text"><slot /></p>
+  <p class="kstat-meta small muted">
+    {source && <span>Source: {source}. </span>}
+    <a href={`#${id}`} class="copy-link" data-copy-anchor={id}>Copy link to this statistic</a>
+  </p>
+</li>

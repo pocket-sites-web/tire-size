@@ -1,0 +1,21 @@
+---
+// Generic ranked table with optional per-cell withholding. rows: [{label, cells: [{v, ok}], tail}]
+interface Cell { text: string; ok?: boolean }
+interface Row { label: string; cells: Cell[]; tail?: string; muted?: boolean }
+interface Props { id: string; caption: string; headers: string[]; rows: Row[]; csv?: string; tailHeader?: string; note?: string }
+const { id, caption, headers, rows, csv, tailHeader, note } = Astro.props;
+---
+<figure class="bars" id={id}>
+  <figcaption><b>{caption}</b> <a href={`#${id}`} class="copy-link st-small" data-copy-anchor={id}>Link</a>{csv && <> · <a href={csv} download>Download CSV</a></>}</figcaption>
+  <div class="st-wrap st-state">
+    <table>
+      <thead><tr>{headers.map((h) => <th scope="col">{h}</th>)}{tailHeader && <th scope="col">{tailHeader}</th>}</tr></thead>
+      <tbody>
+        {rows.map((r) => (
+          <tr class={r.muted ? 'st-muted' : undefined}><th scope="row" class="bar-label">{r.label}</th>{r.cells.map((c) => <td>{c.ok === false ? '–' : c.text}</td>)}{tailHeader && <td class="nowrap">{r.tail}</td>}</tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+  {note && <p class="st-small st-muted">{note}</p>}
+</figure>

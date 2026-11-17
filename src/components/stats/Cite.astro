@@ -1,0 +1,34 @@
+---
+import { SITE_NAME, SITE_URL, STATS_UPDATED } from '../../lib/stats';
+interface Props { title: string; path: string }
+const { title, path } = Astro.props;
+const url = `${SITE_URL}${path}`;
+const year = STATS_UPDATED.slice(0, 4);
+const apa = `${SITE_NAME}. (${year}). ${title}. ${url}`;
+const html = `<a href="${url}">${title}</a> (${SITE_NAME})`;
+---
+<section class="cite" id="cite">
+  <h2>Cite or share these statistics</h2>
+  <p>You're welcome to use any figure on this page in articles, reports and videos. Please credit {SITE_NAME} with a link to this page.</p>
+  <div class="cite-box">
+    <p class="st-label">Citation</p>
+    <p class="st-mono st-small cite-text">{apa}</p>
+    <button type="button" class="st-btn" data-copy-text={apa}>Copy citation</button>
+  </div>
+  <div class="cite-box">
+    <p class="st-label">Link (HTML)</p>
+    <p class="st-mono st-small cite-text">{html}</p>
+    <button type="button" class="st-btn" data-copy-text={html}>Copy HTML link</button>
+  </div>
+</section>
+<script>
+  const flash = (el: HTMLElement, msg: string) => { const t = el.textContent; el.textContent = msg; setTimeout(() => (el.textContent = t), 1500); };
+  const copy = async (text: string) => { try { await navigator.clipboard.writeText(text); return true; } catch { return false; } };
+  document.querySelectorAll<HTMLElement>('[data-copy-text]').forEach((b) =>
+    b.addEventListener('click', async () => { if (await copy(b.dataset.copyText!)) flash(b, 'Copied'); }));
+  document.querySelectorAll<HTMLAnchorElement>('[data-copy-anchor]').forEach((a) =>
+    a.addEventListener('click', async (e) => {
+      const url = `${location.origin}${location.pathname}#${a.dataset.copyAnchor}`;
+      if (await copy(url)) { e.preventDefault(); history.replaceState(null, '', `#${a.dataset.copyAnchor}`); flash(a, 'Link copied'); }
+    }));
+</script>

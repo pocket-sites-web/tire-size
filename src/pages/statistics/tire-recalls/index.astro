@@ -1,0 +1,103 @@
+---
+import Base from '../../../layouts/Base.astro';
+import '../../../styles/stats.css';
+import KeyStat from '../../../components/stats/KeyStat.astro';
+import Bars from '../../../components/stats/Bars.astro';
+import StateTable from '../../../components/stats/StateTable.astro';
+import Cite from '../../../components/stats/Cite.astro';
+import { recalls as R, complaints as C, STATS_UPDATED_LABEL, articleLd, datasetLd, faqLd, n0, CMPL_URL, CMPL_CITE } from '../../../lib/stats';
+
+const RCL_URL = 'https://www.nhtsa.gov/nhtsa-datasets-and-apis';
+const RCL_CITE = 'National Highway Traffic Safety Administration, recalls flat file (FLAT_RCL_POST_2010)';
+const path = '/statistics/tire-recalls/';
+const title = 'Tire Recall Statistics: NHTSA Tire Recalls and Complaints Analysed';
+const [y0, y1] = R.years;
+const m = (v: number) => (v >= 1e6 ? `${(v / 1e6).toFixed(1)} million` : n0(v));
+const byYear = R.tire_by_year as Record<string, { campaigns: number; tires: number }>;
+const themes = R.themes as { theme: string; n: number }[];
+const mfrs = R.tire_by_mfr as { mfr: string; campaigns: number; tires: number }[];
+const largest = R.largest as { mfr: string; year: string; tires: number; campaign: string }[];
+const cthemes = C.themes as { theme: string; n: number }[];
+const description = `${n0(R.tire_campaigns)} US tire recalls from ${y0} to ${y1} covered ${m(R.tires)} tires. ${R.markings_pct}% were for wrong or missing sidewall markings. Recalls by year, manufacturer and defect, plus ${n0(C.all_tire)} tire complaints to NHTSA.`;
+const faq = [
+  ['How many tires are recalled each year?', `From ${y0} to ${y1}, tire makers filed ${n0(R.tire_campaigns)} tire recalls with NHTSA covering ${m(R.tires)} tires, an average of ${Math.round(R.tire_campaigns / (y1 - y0 + 1))} recalls a year. The numbers swing widely because a single recall can cover over a million tires.`],
+  ['What is the most common reason for a tire recall?', `Wrong or missing sidewall markings, such as an incorrect DOT code, load rating or size. ${n0(R.markings)} of ${n0(R.tire_campaigns)} tire recalls (${R.markings_pct}%) were mainly about markings. The rest were for physical defects such as tread separation, sidewall bulges and air loss.`],
+  ['How do I check if my tires are recalled?', 'Find the DOT Tire Identification Number on the sidewall (it starts with "DOT") and enter it at nhtsa.gov/recalls. Tire recalls are not linked to your vehicle\'s VIN, so a VIN search will not show them.'],
+  ['What tire problems do drivers report most?', `In the ${n0(C.all_tire)} tire complaints filed with NHTSA from ${C.years[0]} to ${C.years[1]}, the most common problem was a ${cthemes[0].theme.toLowerCase()} (${n0(cthemes[0].n)} complaints).`],
+];
+const jsonLd = [...articleLd(path, title, description, 'Tire recalls'),
+  datasetLd(path, 'US tire recalls by year', `Counts of NHTSA tire recall campaigns by year filed, ${y0} to ${y1}, with tires potentially affected.`, ['/data/tire-recalls-by-year.csv', '/data/tire-complaints-by-make.csv'], RCL_URL, `${y0}/${y1}`), faqLd(faq)];
+const yearRows = Object.entries(byYear).map(([y, v]) => ({ label: y, value: v.campaigns, extra: m(v.tires) }));
+const mfrRows = mfrs.map((x) => ({ label: x.mfr, cells: [{ text: n0(x.campaigns) }], tail: m(x.tires), muted: false }));
+const largeRows = largest.map((x) => ({ label: `${x.mfr} (${x.year})`, value: x.tires, extra: x.campaign }));
+---
+<Base title={title} description={description} jsonLd={jsonLd}>
+  <section class="st-section">
+    <p class="crumbs"><a href="/">Home</a> › <a href="/statistics/">Statistics</a> › Tire recalls</p>
+    <h1>Tire recall statistics</h1>
+    <p class="updated">Updated {STATS_UPDATED_LABEL} · Original analysis of NHTSA tire recalls ({y0} to {y1}) and owner complaints ({C.years[0]} to {C.years[1]})</p>
+    <p class="lede">Tire recalls work differently from car recalls: they follow the tire's DOT code, not the car's VIN, so many owners never hear about them. We went through every tire recall filed with the National Highway Traffic Safety Administration from {y0} to {y1}, plus tire-related vehicle recalls and owner complaints, to show how often tires are recalled, why, and by whom.</p>
+    <nav class="toc" aria-label="On this page"><a href="#key-findings">Key findings</a><a href="#by-year">By year</a><a href="#reasons">Reasons</a><a href="#by-manufacturer">By manufacturer</a><a href="#largest">Largest recalls</a><a href="#vehicle-recalls">Vehicle recalls</a><a href="#complaints">Complaints</a><a href="#methodology">Methodology</a><a href="#cite">Cite</a></nav>
+  </section>
+
+  <section class="st-section" id="key-findings">
+    <h2>Key findings</h2>
+    <ul class="kstats">
+      <KeyStat id="total" value={n0(R.tire_campaigns)} source={`NHTSA recalls, ${y0} to ${y1}`}><b>tire recalls</b> were filed in the US from {y0} to {y1}, covering <b>{m(R.tires)}</b> tires.</KeyStat>
+      <KeyStat id="markings" value={`${R.markings_pct}%`} source="NHTSA recalls">of tire recalls were for <b>wrong or missing sidewall markings</b>, such as the DOT code or load rating ({m(R.markings_tires)} tires).</KeyStat>
+      <KeyStat id="structural" value={n0(R.structural)} source="NHTSA recalls">tire recalls were for <b>physical defects</b> such as tread separation, bulges or air loss, covering {m(R.structural_tires)} tires.</KeyStat>
+      <KeyStat id="placard" value={n0(R.placard)} source="NHTSA recalls">vehicle recalls were for a <b>wrong tire pressure or load placard</b> on the car, covering {m(R.placard_vehicles)} vehicles.</KeyStat>
+      <KeyStat id="wheel-detach" value={n0(R.wheel_detach)} source="NHTSA recalls">vehicle recalls warn that a <b>wheel could come off</b> ({n0(R.vehicle_wheel)} wheel recalls in all).</KeyStat>
+      <KeyStat id="blowouts" value={n0(cthemes[0].n)} source={`NHTSA complaints, ${C.years[0]} to ${C.years[1]}`}>tire complaints to NHTSA describe a <b>{cthemes[0].theme.toLowerCase()}</b>, the most reported tire problem.</KeyStat>
+    </ul>
+  </section>
+
+  <section class="st-section" id="by-year">
+    <h2>Tire recalls by year</h2>
+    <Bars id="tire-recalls-by-year" caption={`Tire recall campaigns per year, ${y0} to ${y1}`} rows={yearRows} format="count" valueLabel="Recalls" extraLabel="Tires" />
+    <p class="st-small"><a href="/data/tire-recalls-by-year.csv" download>Download the yearly data (CSV)</a></p>
+  </section>
+
+  <section class="st-section" id="reasons">
+    <h2>Why tires are recalled</h2>
+    <p>Themes found in each recall's defect and consequence text. A recall can mention more than one, so treat these as indicators, not exact counts.</p>
+    <Bars id="tire-recall-reasons" caption="Themes in tire recalls" rows={themes.map((t) => ({ label: t.theme, value: t.n }))} format="count" valueLabel="Recalls" />
+    <p>A marking recall can still matter: a wrong load rating or size on the sidewall can lead to the wrong tire being fitted. Check your car's correct size and load rating: <a href="/makes/">find your tire size</a> · <a href="/how-to-read-tire-size/">how to read a tire size</a>.</p>
+  </section>
+
+  <section class="st-section" id="by-manufacturer">
+    <h2>Tire makers with the most recalls</h2>
+    <p>More recalls doesn't necessarily mean less reliable tires: big manufacturers make more tire lines and may be quicker to report problems.</p>
+    <StateTable id="tire-recalls-by-manufacturer" caption={`Tire recall campaigns by manufacturer, ${y0} to ${y1}`} headers={['Manufacturer', 'Recalls']} rows={mfrRows} tailHeader="Tires" />
+  </section>
+
+  <section class="st-section" id="largest">
+    <h2>The largest tire recalls</h2>
+    <Bars id="largest-tire-recalls" caption={`Largest tire recalls by tires potentially affected, ${y0} to ${y1}`} rows={largeRows} format="count" valueLabel="Tires" extraLabel="NHTSA campaign" />
+  </section>
+
+  <section class="st-section" id="vehicle-recalls">
+    <h2>Tire and wheel problems in vehicle recalls</h2>
+    <p>Carmakers also recall vehicles for tire and wheel problems. From {y0} to {y1}, {n0(R.vehicle_tire)} vehicle recalls listed tires as a component ({m(R.vehicle_tire_vehicles)} vehicles) and {n0(R.vehicle_wheel)} listed wheels ({m(R.vehicle_wheel_vehicles)} vehicles). Another {n0(R.placard)} vehicle recalls were for a wrong tire and loading information placard, the label on the door frame that gives the recommended pressure and load. {n0(R.lug)} wheel recalls involved lug nuts or wheel studs.</p>
+  </section>
+
+  <section class="st-section" id="complaints">
+    <h2>What drivers report about tires</h2>
+    <p>From {C.years[0]} to {C.years[1]}, NHTSA received {n0(C.all_tire)} tire complaints: {n0(C.vehicle_tire)} vehicle complaints that list tires as a component and {n0(C.tire_product)} complaints about tires themselves. {n0(C.crash)} reported a crash and {n0(C.injury)} an injury.</p>
+    <Bars id="tire-complaint-problems" caption="Problems described in NHTSA tire complaints" rows={cthemes.map((t) => ({ label: t.theme, value: t.n }))} format="count" valueLabel="Complaints" />
+    <p class="st-small"><a href="/data/tire-complaints-by-make.csv" download>Download tire complaints by vehicle make (CSV)</a></p>
+  </section>
+
+  <section class="st-section st-faq" id="faq"><h2>Questions</h2>{faq.map(([q, a]) => (<div><h3>{q}</h3><p>{a}</p></div>))}</section>
+
+  <section class="st-section methods" id="methodology">
+    <h2>Methodology</h2>
+    <p>We downloaded NHTSA's recall flat file and grouped records by campaign number, so each recall counts once however many tire sizes it covers. Tire recalls are those NHTSA classes as tire recalls; vehicle recalls are classed separately. Recalls are dated by the date the manufacturer filed the report, and tire counts are the manufacturer's estimate of units potentially affected. A recall counts as a marking recall if NHTSA lists the component as tire markings or its text describes incorrect or missing markings or labels; the rest are counted as physical defects. Themes come from searching the defect and consequence text.</p>
+    <p>Complaints come from NHTSA's complaint flat files, received {C.years[0]} to {C.years[1]}, each counted once. NHTSA complaints are reports from the public and aren't verified.</p>
+    <h3>Sources</h3>
+    <ul class="st-small"><li><a href={RCL_URL}>{RCL_CITE}</a>.</li><li><a href={CMPL_URL}>{CMPL_CITE}</a>.</li></ul>
+  </section>
+
+  <Cite title="Tire Recall Statistics" path={path} />
+  <section class="st-section"><h2>More statistics</h2><ul class="st-links"><li><a href="/statistics/wheel-size-trends/">Wheel and tire size trends</a></li><li><a href="/statistics/tire-pressure/">Recommended tire pressure statistics</a></li><li><a href="/statistics/">All statistics</a></li></ul></section>
+</Base>

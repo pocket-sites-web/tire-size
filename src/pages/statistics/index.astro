@@ -1,0 +1,31 @@
+---
+import Base from '../../layouts/Base.astro';
+import '../../styles/stats.css';
+import { recalls, STATS_UPDATED_LABEL, SITE_URL, SITE_NAME, n0 } from '../../lib/stats';
+import { tireStats } from '../../lib/tirestats';
+const T = tireStats();
+const p0 = T.byPeriod[0], p1 = T.byPeriod[T.byPeriod.length - 1];
+const pages = [
+  { href: '/statistics/wheel-size-trends/', title: 'Wheel and tire size trends', blurb: `${Math.round(p1.rim19)}% of ${p1.label} models offer 19-inch or larger wheels, up from ${Math.round(p0.rim19)}% in ${p0.label}.` },
+  { href: '/statistics/tire-pressure/', title: 'Recommended tire pressure statistics', blurb: `The median recommended pressure is ${T.pressure.median} psi. What carmakers recommend, from ${n0(T.modelYears)} owner's manuals.` },
+  { href: '/statistics/tire-recalls/', title: 'Tire recall statistics', blurb: `${n0(recalls.tire_campaigns)} US tire recalls from ${recalls.years[0]} to ${recalls.years[1]}, covering ${(recalls.tires / 1e6).toFixed(1)} million tires.` },
+];
+---
+<Base title="Tire and Wheel Statistics" description="Original statistics on car wheel and tire sizes, recommended tire pressures and tire recalls, from our own owner's-manual data and NHTSA records." jsonLd={{ '@context': 'https://schema.org', '@type': 'CollectionPage', name: `${SITE_NAME} statistics`, url: `${SITE_URL}/statistics/` }}>
+  <section class="st-section">
+    <p class="crumbs"><a href="/">Home</a> › Statistics</p>
+    <h1>Tire and wheel statistics</h1>
+    <p class="updated">Updated {STATS_UPDATED_LABEL}</p>
+    <p class="lede">Original research from {SITE_NAME}: our own owner's-manual tire data plus new analysis of federal recall and complaint records. Every figure has its own link, sources and methodology, and you're welcome to cite them with a link back.</p>
+  </section>
+  <section class="st-section"><ul class="kstats">{pages.map((p) => (<li class="kstat"><h2><a href={p.href}>{p.title}</a></h2><p class="kstat-text">{p.blurb}</p></li>))}</ul></section>
+  <section class="st-section">
+    <h2>Downloads</h2>
+    <ul class="st-links" style="grid-template-columns:1fr">
+      <li><a href="/data/wheel-sizes-by-model-year.csv" download>Wheel sizes, tire sizes and pressures by model year (CSV)</a></li>
+      <li><a href="/data/tire-recalls-by-year.csv" download>Tire recalls by year (CSV)</a></li>
+      <li><a href="/data/tire-complaints-by-make.csv" download>Tire complaints by vehicle make (CSV)</a></li>
+    </ul>
+    <p class="st-small st-muted">Free to reuse under CC BY 4.0: please credit {SITE_NAME} with a link.</p>
+  </section>
+</Base>

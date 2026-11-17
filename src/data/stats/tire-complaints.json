@@ -1,0 +1,283 @@
+{
+ "years": [
+  2015,
+  2025
+ ],
+ "vehicle_total": 721179,
+ "vehicle_tire": 4186,
+ "vehicle_tire_pct": 0.58,
+ "vehicle_wheel": 12125,
+ "tire_product": 1127,
+ "all_tire": 5313,
+ "crash": 203,
+ "injury": 97,
+ "crash_pct": 3.8,
+ "crash_pct_vehicle_all": 4.4,
+ "themes": [
+  {
+   "theme": "Blowout or sudden air loss",
+   "n": 1321
+  },
+  {
+   "theme": "Spare tire or jack",
+   "n": 597
+  },
+  {
+   "theme": "Sidewall bubble, bulge or crack",
+   "n": 591
+  },
+  {
+   "theme": "Tire pressure (TPMS) problems",
+   "n": 568
+  },
+  {
+   "theme": "Tread separation",
+   "n": 487
+  },
+  {
+   "theme": "Cracking or dry rot",
+   "n": 360
+  },
+  {
+   "theme": "Premature or uneven wear",
+   "n": 137
+  },
+  {
+   "theme": "Slow leak or won't hold air",
+   "n": 108
+  }
+ ],
+ "by_year": {
+  "2015": 926,
+  "2016": 552,
+  "2017": 345,
+  "2018": 366,
+  "2019": 334,
+  "2020": 220,
+  "2021": 462,
+  "2022": 526,
+  "2023": 569,
+  "2024": 510,
+  "2025": 503
+ },
+ "by_make": [
+  {
+   "make": "Mercedes-Benz",
+   "complaints": 15246,
+   "tire": 166,
+   "pct": 1.1
+  },
+  {
+   "make": "Lexus",
+   "complaints": 6024,
+   "tire": 56,
+   "pct": 0.9
+  },
+  {
+   "make": "Toyota",
+   "complaints": 47236,
+   "tire": 425,
+   "pct": 0.9
+  },
+  {
+   "make": "Buick",
+   "complaints": 6634,
+   "tire": 55,
+   "pct": 0.8
+  },
+  {
+   "make": "Mazda",
+   "complaints": 9357,
+   "tire": 70,
+   "pct": 0.7
+  },
+  {
+   "make": "Audi",
+   "complaints": 6911,
+   "tire": 48,
+   "pct": 0.7
+  },
+  {
+   "make": "BMW",
+   "complaints": 16445,
+   "tire": 101,
+   "pct": 0.6
+  },
+  {
+   "make": "Ram",
+   "complaints": 17445,
+   "tire": 102,
+   "pct": 0.6
+  },
+  {
+   "make": "Cadillac",
+   "complaints": 7047,
+   "tire": 41,
+   "pct": 0.6
+  },
+  {
+   "make": "Honda",
+   "complaints": 50629,
+   "tire": 278,
+   "pct": 0.5
+  },
+  {
+   "make": "Dodge",
+   "complaints": 36099,
+   "tire": 184,
+   "pct": 0.5
+  },
+  {
+   "make": "Volkswagen",
+   "complaints": 16951,
+   "tire": 85,
+   "pct": 0.5
+  },
+  {
+   "make": "Lincoln",
+   "complaints": 5554,
+   "tire": 27,
+   "pct": 0.5
+  },
+  {
+   "make": "GMC",
+   "complaints": 22018,
+   "tire": 102,
+   "pct": 0.5
+  },
+  {
+   "make": "Chevrolet",
+   "complaints": 69908,
+   "tire": 311,
+   "pct": 0.4
+  },
+  {
+   "make": "Infiniti",
+   "complaints": 3679,
+   "tire": 16,
+   "pct": 0.4
+  },
+  {
+   "make": "Ford",
+   "complaints": 130508,
+   "tire": 540,
+   "pct": 0.4
+  },
+  {
+   "make": "Nissan",
+   "complaints": 35493,
+   "tire": 142,
+   "pct": 0.4
+  },
+  {
+   "make": "Hyundai",
+   "complaints": 37613,
+   "tire": 148,
+   "pct": 0.4
+  },
+  {
+   "make": "Tesla",
+   "complaints": 12119,
+   "tire": 42,
+   "pct": 0.3
+  },
+  {
+   "make": "Chrysler",
+   "complaints": 21085,
+   "tire": 73,
+   "pct": 0.3
+  },
+  {
+   "make": "Subaru",
+   "complaints": 18631,
+   "tire": 62,
+   "pct": 0.3
+  },
+  {
+   "make": "Acura",
+   "complaints": 7081,
+   "tire": 23,
+   "pct": 0.3
+  },
+  {
+   "make": "Saturn",
+   "complaints": 3002,
+   "tire": 9,
+   "pct": 0.3
+  },
+  {
+   "make": "Kia",
+   "complaints": 30360,
+   "tire": 81,
+   "pct": 0.3
+  },
+  {
+   "make": "Jeep",
+   "complaints": 46621,
+   "tire": 118,
+   "pct": 0.3
+  },
+  {
+   "make": "Mercury",
+   "complaints": 4004,
+   "tire": 9,
+   "pct": 0.2
+  },
+  {
+   "make": "Pontiac",
+   "complaints": 5528,
+   "tire": 9,
+   "pct": 0.2
+  }
+ ],
+ "top_model_years": [
+  {
+   "model": "2017 Ford Explorer",
+   "n": 18
+  },
+  {
+   "model": "2006 Toyota Sienna",
+   "n": 16
+  },
+  {
+   "model": "2018 Mercedes-Benz Metris",
+   "n": 14
+  },
+  {
+   "model": "2016 Mercedes-Benz Metris",
+   "n": 14
+  },
+  {
+   "model": "2014 Honda Cr-V",
+   "n": 14
+  },
+  {
+   "model": "2021 Forest River Cherokee",
+   "n": 13
+  },
+  {
+   "model": "2017 Mercedes-Benz Metris",
+   "n": 13
+  },
+  {
+   "model": "2004 Toyota Sienna",
+   "n": 13
+  },
+  {
+   "model": "2013 Hyundai Elantra",
+   "n": 13
+  },
+  {
+   "model": "2005 Toyota Sienna",
+   "n": 12
+  },
+  {
+   "model": "2016 Ford Explorer",
+   "n": 12
+  },
+  {
+   "model": "2014 Honda Civic",
+   "n": 11
+  }
+ ]
+}

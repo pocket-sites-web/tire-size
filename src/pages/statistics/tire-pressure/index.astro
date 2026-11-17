@@ -1,0 +1,81 @@
+---
+import Base from '../../../layouts/Base.astro';
+import '../../../styles/stats.css';
+import KeyStat from '../../../components/stats/KeyStat.astro';
+import Bars from '../../../components/stats/Bars.astro';
+import Cite from '../../../components/stats/Cite.astro';
+import { complaints as C, STATS_UPDATED_LABEL, SITE_NAME, SITE_URL, articleLd, datasetLd, faqLd, n0 } from '../../../lib/stats';
+import { tireStats } from '../../../lib/tirestats';
+
+const T = tireStats();
+const P = T.pressure;
+const path = '/statistics/tire-pressure/';
+const makes = T.makes.join(', ').replace(/, ([^,]*)$/, ' and $1');
+const y0 = T.years[0], y1 = T.years[T.years.length - 1];
+const r = (v: number) => `${Math.round(v)}%`;
+const top2 = [...P.dist].sort((a, b) => b.pct - a.pct).slice(0, 2);
+const in3235 = P.dist.filter((d) => d.psi >= 32 && d.psi <= 36).reduce((a, d) => a + d.pct, 0);
+const pp0 = P.byPeriod[0], pp1 = P.byPeriod[P.byPeriod.length - 1];
+const tpms = (C.themes as { theme: string; n: number }[]).find((t) => t.theme.startsWith('Tire pressure'))!;
+const title = `What Tire Pressure Do Carmakers Recommend? Statistics From ${T.modelYears} Owner's Manuals`;
+const description = `The median recommended tire pressure is ${P.median} psi, and ${r(in3235)} of cars call for 32 to 36 psi. Original statistics on recommended pressures from ${n0(T.modelYears)} ${makes} owner's manuals.`;
+const faq = [
+  ['What is the normal tire pressure for a car?', `Most cars call for 32 to 36 psi when the tires are cold: ${r(in3235)} of the passenger model years in our data. The median is ${P.median} psi, and ${top2[0].psi} and ${top2[1].psi} psi are the most common figures. Always use the pressure on your car's door-frame placard.`],
+  ['Should front and rear tires have the same pressure?', `Not always. ${r(P.diffFR)} of the model years in our data recommend different front and rear pressures, and in ${r(P.rearHigher)} the rear is higher.`],
+  ['What pressure should a spare tire be?', `Temporary "donut" spares usually need 60 psi: ${r(P.spareT60)} of the temporary spares in our data call for it. Check the spare's pressure every few months, because it loses air in storage.`],
+  ['Is tire pressure the same for every car?', `No. In our data it ranges from ${P.low.psi} psi (${P.low.year} ${P.low.make} ${P.low.model}) to ${P.high.psi} psi (${P.high.year} ${P.high.make} ${P.high.model}) for passenger tires, and light-truck tires can need far more.`],
+];
+const jsonLd = [...articleLd(path, title, description, 'Tire pressure'),
+  datasetLd(path, 'Recommended tire pressures by car model year', `Recommended cold tire pressures for ${n0(T.modelYears)} ${makes} model years (${y0} to ${y1}), transcribed from owner's manuals by ${SITE_NAME}.`, ['/data/wheel-sizes-by-model-year.csv'], `${SITE_URL}/sources/`, `${y0}/${y1}`), faqLd(faq)];
+---
+<Base title={title} description={description} jsonLd={jsonLd}>
+  <section class="st-section">
+    <p class="crumbs"><a href="/">Home</a> › <a href="/statistics/">Statistics</a> › Tire pressure</p>
+    <h1>What tire pressure do carmakers recommend?</h1>
+    <p class="updated">Updated {STATS_UPDATED_LABEL} · Original data: recommended pressures from {n0(P.n)} passenger model years</p>
+    <p class="lede">Every owner's manual gives a recommended cold tire pressure for each original equipment size. We transcribe those figures for every car on {SITE_NAME}, which lets us show what pressures carmakers actually recommend, how much they vary and how often front and rear differ. The data covers {T.models} {makes} models from {y0} to {y1}.</p>
+    <nav class="toc" aria-label="On this page"><a href="#key-findings">Key findings</a><a href="#distribution">Distribution</a><a href="#by-make">By make</a><a href="#over-time">Over time</a><a href="#methodology">Methodology</a><a href="#cite">Cite</a></nav>
+  </section>
+
+  <section class="st-section" id="key-findings">
+    <h2>Key findings</h2>
+    <ul class="kstats">
+      <KeyStat id="median" value={`${P.median} psi`} source={`${SITE_NAME} data`}>is the <b>median recommended front tire pressure</b> across {n0(P.n)} passenger model years.</KeyStat>
+      <KeyStat id="range" value={r(in3235)} source={`${SITE_NAME} data`}>of model years call for <b>32 to 36 psi</b>. The two most common figures are {top2[0].psi} psi ({r(top2[0].pct)}) and {top2[1].psi} psi ({r(top2[1].pct)}).</KeyStat>
+      <KeyStat id="front-rear" value={r(P.diffFR)} source={`${SITE_NAME} data`}>of model years recommend <b>different front and rear pressures</b>; in {r(P.rearHigher)} the rear is higher.</KeyStat>
+      <KeyStat id="spare" value={r(P.spareT60)} source={`${SITE_NAME} data`}>of temporary spare tires with a listed pressure need <b>60 psi</b>, nearly twice a normal tire.</KeyStat>
+      <KeyStat id="newer-cars" value={`${pp1.median} psi`} source={`${SITE_NAME} data`}>median for <b>{pp1.label}</b> model years, against {pp0.median} psi for {pp0.label}.</KeyStat>
+      <KeyStat id="tpms-complaints" value={n0(tpms.n)} source={`NHTSA complaints, ${C.years[0]} to ${C.years[1]}`}>tire complaints to NHTSA describe a <b>tire pressure monitor (TPMS)</b> problem.</KeyStat>
+    </ul>
+  </section>
+
+  <section class="st-section" id="distribution">
+    <h2>Recommended pressures</h2>
+    <p>Share of passenger model years by recommended front tire pressure (cold), rounded to the nearest psi. Pressures with fewer than three model years are left out.</p>
+    <Bars id="pressure-distribution" caption="Recommended front tire pressure, share of model years" rows={P.dist.map((d) => ({ label: `${d.psi} psi`, value: d.pct }))} valueLabel="Share of model years" />
+  </section>
+
+  <section class="st-section" id="by-make">
+    <h2>Recommended pressure by make</h2>
+    <Bars id="pressure-by-make" caption="Median recommended front tire pressure, by make (psi)" rows={P.byMake.map((x) => ({ label: x.label, value: x.median, extra: n0(x.n) }))} format="count" valueLabel="Median psi" extraLabel="Model years" />
+  </section>
+
+  <section class="st-section" id="over-time">
+    <h2>Recommended pressure over time</h2>
+    <Bars id="pressure-by-period" caption="Median recommended front tire pressure, by model year period (psi)" rows={P.byPeriod.map((x) => ({ label: x.label, value: x.median, extra: n0(x.n) }))} format="count" valueLabel="Median psi" extraLabel="Model years" />
+    <p>Find the recommended pressure for your car on its model page: <a href="/makes/">browse by make</a>.</p>
+  </section>
+
+  <section class="st-section st-faq" id="faq"><h2>Questions</h2>{faq.map(([q, a]) => (<div><h3>{q}</h3><p>{a}</p></div>))}</section>
+
+  <section class="st-section methods" id="methodology">
+    <h2>Methodology</h2>
+    <p>We take the recommended cold front tire pressure for each original equipment size listed in the owner's manual and use the median across sizes for each model year. Light-truck (LT) fitments ({T.pressure.lt} model years) are left out of the distribution because they run much higher pressures. Temporary spare figures come from the spare sizes listed in the same manuals.</p>
+    <p>The data covers {makes} only, model years {y0} to {y1}. Recommended pressures can differ by trim, load and speed, so always follow the placard on your own car's door frame.</p>
+    <h3>Sources</h3>
+    <ul class="st-small"><li>{SITE_NAME}, tire data transcribed from manufacturers' owner's manuals. <a href="/sources/">Sources and method</a>.</li><li><a href="/data/wheel-sizes-by-model-year.csv" download>Download sizes and pressures by model year (CSV)</a>.</li></ul>
+  </section>
+
+  <Cite title="Recommended Tire Pressure Statistics" path={path} />
+  <section class="st-section"><h2>More statistics</h2><ul class="st-links"><li><a href="/statistics/wheel-size-trends/">Wheel and tire size trends</a></li><li><a href="/statistics/tire-recalls/">Tire recall and complaint statistics</a></li><li><a href="/statistics/">All statistics</a></li></ul></section>
+</Base>

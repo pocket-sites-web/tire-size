@@ -1,0 +1,227 @@
+{
+ "years": [
+  2010,
+  2025
+ ],
+ "tire_campaigns": 191,
+ "tires": 8021691,
+ "markings": 91,
+ "markings_tires": 3125356,
+ "markings_pct": 47.6,
+ "fmvss139": 57,
+ "structural": 100,
+ "structural_tires": 4896335,
+ "themes": [
+  {
+   "theme": "Sidewall markings or labelling wrong or missing",
+   "n": 90
+  },
+  {
+   "theme": "Air loss or blowout risk",
+   "n": 65
+  },
+  {
+   "theme": "Manufacturing defect (curing, compound, cords)",
+   "n": 54
+  },
+  {
+   "theme": "Tread or belt separation",
+   "n": 53
+  },
+  {
+   "theme": "Sidewall cracks, bulges or cuts",
+   "n": 24
+  },
+  {
+   "theme": "Bead problems",
+   "n": 9
+  }
+ ],
+ "tire_by_year": {
+  "2010": {
+   "campaigns": 16,
+   "tires": 55477
+  },
+  "2011": {
+   "campaigns": 3,
+   "tires": 446551
+  },
+  "2012": {
+   "campaigns": 18,
+   "tires": 1136314
+  },
+  "2013": {
+   "campaigns": 11,
+   "tires": 1429404
+  },
+  "2014": {
+   "campaigns": 13,
+   "tires": 368720
+  },
+  "2015": {
+   "campaigns": 13,
+   "tires": 387411
+  },
+  "2016": {
+   "campaigns": 12,
+   "tires": 335982
+  },
+  "2017": {
+   "campaigns": 12,
+   "tires": 621538
+  },
+  "2018": {
+   "campaigns": 10,
+   "tires": 63328
+  },
+  "2019": {
+   "campaigns": 9,
+   "tires": 35939
+  },
+  "2020": {
+   "campaigns": 14,
+   "tires": 69722
+  },
+  "2021": {
+   "campaigns": 8,
+   "tires": 646316
+  },
+  "2022": {
+   "campaigns": 17,
+   "tires": 335752
+  },
+  "2023": {
+   "campaigns": 7,
+   "tires": 577571
+  },
+  "2024": {
+   "campaigns": 12,
+   "tires": 1366468
+  },
+  "2025": {
+   "campaigns": 16,
+   "tires": 145198
+  }
+ },
+ "tire_by_mfr": [
+  {
+   "mfr": "Continental Tire the Americas LLC",
+   "campaigns": 22,
+   "tires": 771694
+  },
+  {
+   "mfr": "Cooper Tire & Rubber Co",
+   "campaigns": 15,
+   "tires": 542943
+  },
+  {
+   "mfr": "Michelin North America Inc",
+   "campaigns": 13,
+   "tires": 2844121
+  },
+  {
+   "mfr": "Goodyear Tire & Rubber Company",
+   "campaigns": 12,
+   "tires": 299332
+  },
+  {
+   "mfr": "Toyo Tire Holdings of Americas Inc",
+   "campaigns": 8,
+   "tires": 304380
+  },
+  {
+   "mfr": "Yokohama Tire Corporation",
+   "campaigns": 7,
+   "tires": 34915
+  },
+  {
+   "mfr": "Bridgestone Americas Tire Operations",
+   "campaigns": 6,
+   "tires": 39914
+  },
+  {
+   "mfr": "Sumitomo Rubber USA LLC",
+   "campaigns": 5,
+   "tires": 8105
+  },
+  {
+   "mfr": "Hankook Tire America Corp",
+   "campaigns": 5,
+   "tires": 73227
+  },
+  {
+   "mfr": "Hercules Tire & Rubber Company",
+   "campaigns": 4,
+   "tires": 195034
+  },
+  {
+   "mfr": "Sumitomo Rubber Industries, Ltd",
+   "campaigns": 4,
+   "tires": 9456
+  },
+  {
+   "mfr": "Pirelli Tire LLC",
+   "campaigns": 4,
+   "tires": 8903
+  }
+ ],
+ "largest": [
+  {
+   "mfr": "Michelin North America Inc",
+   "year": "2013",
+   "tires": 1200000,
+   "campaign": "13T012000"
+  },
+  {
+   "mfr": "Michelin North America Inc",
+   "year": "2012",
+   "tires": 799900,
+   "campaign": "12T019000"
+  },
+  {
+   "mfr": "Wheel Group Holdings LLC",
+   "year": "2024",
+   "tires": 673000,
+   "campaign": "24T001000"
+  },
+  {
+   "mfr": "Michelin North America Inc",
+   "year": "2023",
+   "tires": 542110,
+   "campaign": "23T002000"
+  },
+  {
+   "mfr": "Prinx Chengshan Tire North America Inc",
+   "year": "2024",
+   "tires": 541632,
+   "campaign": "24T014000"
+  },
+  {
+   "mfr": "Cooper Tire & Rubber Co",
+   "year": "2021",
+   "tires": 430298,
+   "campaign": "21T002000"
+  },
+  {
+   "mfr": "GITI Tire (USA) Ltd",
+   "year": "2017",
+   "tires": 394378,
+   "campaign": "17T013000"
+  },
+  {
+   "mfr": "Continental Tire the Americas LLC",
+   "year": "2011",
+   "tires": 390657,
+   "campaign": "11T002000"
+  }
+ ],
+ "vehicle_campaigns": 13045,
+ "vehicle_tire": 322,
+ "vehicle_tire_vehicles": 2851170,
+ "vehicle_wheel": 161,
+ "vehicle_wheel_vehicles": 1023744,
+ "placard": 303,
+ "placard_vehicles": 1358340,
+ "lug": 51,
+ "wheel_detach": 71
+}
