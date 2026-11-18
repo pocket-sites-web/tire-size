@@ -1,0 +1,48 @@
+:root { --st-card: var(--surface-raised); --st-line: var(--line); --st-accent: var(--brand); --st-muted: var(--ink-muted); --st-ink: var(--ink); --st-code: var(--surface); --st-display: var(--font-display); --st-mono: var(--font-mono); }
+/* Statistics pages (portable): map --st-* to the site tokens in each site's stats.css header */
+.updated { font-size: 14px; color: var(--st-muted); }
+.toc { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 15px; }
+.kstats { list-style: none; padding: 0; margin: 0; display: grid; gap: 16px; grid-template-columns: 1fr; }
+@media (min-width: 640px) { .kstats { grid-template-columns: 1fr 1fr; } }
+.kstat { background: var(--st-card); border: 1px solid var(--st-line); border-left: 4px solid var(--st-accent); border-radius: 10px; padding: 16px; display: grid; gap: 6px; align-content: start; scroll-margin-top: 16px; }
+.kstat:target, .bars:target { box-shadow: 0 0 0 3px var(--st-accent); }
+.kstat-value { font: 800 30px/34px var(--st-display); color: var(--st-accent); }
+.kstat-text { font-size: 16px; line-height: 24px; }
+.copy-link { font-weight: 600; white-space: nowrap; }
+.bars { margin: 0; display: grid; gap: 8px; scroll-margin-top: 16px; border-radius: 10px; }
+.bars figcaption { font-size: 15px; line-height: 22px; }
+.bar-label { text-transform: none; letter-spacing: 0; font-size: 15px; color: var(--st-ink); font-weight: 600; white-space: normal; min-width: 96px; }
+@media (max-width: 480px) { th, td { padding: 8px 10px; } .bar-cell { min-width: 110px; } }
+.bar-cell { position: relative; min-width: 140px; width: 60%; }
+.bar { display: block; height: 10px; border-radius: 999px; background: var(--st-accent); opacity: .85; margin-bottom: 4px; }
+.bar-val { font-weight: 600; white-space: nowrap; }
+tr.hl .bar-label, tr.hl .bar-val { color: var(--st-accent); }
+.nowrap { white-space: nowrap; }
+.st-state { max-height: 520px; overflow: auto; }
+.st-state thead th { position: sticky; top: 0; background: var(--st-card); }
+.cite { background: var(--st-card); border: 1px solid var(--st-line); border-radius: 10px; padding: 16px; }
+.cite-box { display: grid; gap: 6px; justify-items: start; }
+.cite-text { background: var(--st-code); color: var(--st-ink); padding: 8px 10px; border-radius: 4px; word-break: break-word; width: 100%; }
+.st-btn { display: inline-block; background: transparent; color: var(--st-accent); box-shadow: inset 0 0 0 1px var(--st-accent); border: 0; border-radius: 4px; padding: 6px 12px; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+.methods { font-size: 15px; line-height: 24px; }
+.sources-list { font-size: 15px; }
+
+.kstats, .bars, .cite, .methods { color: var(--st-ink); }
+.kstats p, .cite p, .bars p { margin: 0; }
+.bars table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.bars th, .bars td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--st-line); vertical-align: top; }
+.bars thead th { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--st-muted); white-space: nowrap; }
+.bars tr:last-child td, .bars tr:last-child th { border-bottom: 0; }
+.st-wrap { overflow-x: auto; background: var(--st-card); border: 1px solid var(--st-line); border-radius: 10px; }
+.st-section { display: grid; gap: 16px; }
+.st-faq { display: grid; gap: 16px; } .st-faq h3 { margin: 0 0 4px; }
+.st-note { padding: 16px; border: 1px dashed var(--st-line); border-radius: 10px; }
+.st-links { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px 16px; }
+.st-links a { font-weight: 600; text-decoration: none; } .st-links a:hover { text-decoration: underline; }
+.kstat-value { color: var(--st-accent); }
+.st-muted { color: var(--st-muted); }
+.st-small { font-size: 14px; line-height: 20px; }
+.st-label { font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--st-muted); }
+.st-mono { font-family: var(--st-mono, ui-monospace, Menlo, Consolas, monospace); }
+.st-section ul:not(.kstats):not(.st-links) { margin: 0; padding-left: 22px; display: grid; gap: 6px; }
+.crumbs { font-size: 14px; color: var(--st-muted); } .st-section h3 { font-size: 17px; line-height: 24px; } .st-section h2, .st-section h1 { margin: 0; }

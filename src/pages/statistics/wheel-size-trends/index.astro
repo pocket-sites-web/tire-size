@@ -1,0 +1,91 @@
+---
+import Base from '../../../layouts/Base.astro';
+import '../../../styles/stats.css';
+import KeyStat from '../../../components/stats/KeyStat.astro';
+import Bars from '../../../components/stats/Bars.astro';
+import Cite from '../../../components/stats/Cite.astro';
+import { STATS_UPDATED_LABEL, SITE_NAME, SITE_URL, articleLd, datasetLd, faqLd, n0 } from '../../../lib/stats';
+import { tireStats } from '../../../lib/tirestats';
+
+const T = tireStats();
+const path = '/statistics/wheel-size-trends/';
+const y0 = T.years[0], y1 = T.years[T.years.length - 1];
+const makes = T.makes.join(', ').replace(/, ([^,]*)$/, ' and $1');
+const p0 = T.byPeriod[0], p1 = T.byPeriod[T.byPeriod.length - 1];
+const r = (v: number) => `${Math.round(v)}%`;
+const in1 = (v: number) => `${v.toFixed(1)} in`;
+const top = T.topSizes[0];
+const title = `Are Car Wheels Getting Bigger? Wheel and Tire Size Trends From ${T.modelYears} Owner's Manuals`;
+const description = `${r(p1.rim19)} of ${p1.label} models offer 19-inch or larger wheels, up from ${r(p0.rim19)} in ${p0.label}. Original wheel and tire size statistics from ${n0(T.modelYears)} ${makes} owner's manuals.`;
+const faq = [
+  ['Are car wheels getting bigger?', `Yes. In our data, the largest wheel offered on a model year averaged ${in1(p0.meanMaxRim)} in ${p0.label} and ${in1(p1.meanMaxRim)} in ${p1.label}. The share of model years offering 19-inch or larger wheels rose from ${r(p0.rim19)} to ${r(p1.rim19)}.`],
+  ['What is the most common car tire size?', `${top.s.code}, fitted to ${top.n} of the ${n0(T.modelYears)} model years we cover, followed by ${T.topSizes[1].s.code} (${T.topSizes[1].n}) and ${T.topSizes[2].s.code} (${T.topSizes[2].n}).`],
+  ['What is the most common wheel size?', `18 inches. ${r(T.rimShare.find((x) => x.rim === 18)!.pct)} of model years offer an 18-inch wheel, and ${r(T.rimShare.find((x) => x.rim === 17)!.pct)} a 17-inch wheel.`],
+  ['Do new cars still come with a spare tire?', `Fewer do. ${r(p0.spare)} of ${p0.label} owner's manuals in our data list a spare tire size, against ${r(p1.spare)} for ${p1.label}. Cars without one usually carry a tire repair kit.`],
+];
+const jsonLd = [...articleLd(path, title, description, 'Wheel size trends'),
+  datasetLd(path, 'Original equipment wheel and tire sizes by car model year', `Smallest and largest wheel diameter, original equipment tire sizes, spare tire and recommended pressure for ${n0(T.modelYears)} ${makes} model years (${y0} to ${y1}), transcribed from owner's manuals by ${SITE_NAME}.`, ['/data/wheel-sizes-by-model-year.csv'], `${SITE_URL}/sources/`, `${y0}/${y1}`), faqLd(faq)];
+const periodRows = T.byPeriod.map((p) => ({ label: p.label, value: p.rim19, extra: n0(p.n) }));
+const yearRows = T.byYear.map((y) => ({ label: String(y.year), value: y.rim19, extra: n0(y.n) }));
+const rimRows = T.rimShare.map((x) => ({ label: `${x.rim}-inch`, value: x.pct }));
+const spareRows = T.byPeriod.map((p) => ({ label: p.label, value: p.spare, extra: n0(p.n) }));
+---
+<Base title={title} description={description} jsonLd={jsonLd}>
+  <section class="st-section">
+    <p class="crumbs"><a href="/">Home</a> › <a href="/statistics/">Statistics</a> › Wheel size trends</p>
+    <h1>Are car wheels getting bigger? Wheel and tire size trends</h1>
+    <p class="updated">Updated {STATS_UPDATED_LABEL} · Original data: {n0(T.modelYears)} model years from official owner's manuals</p>
+    <p class="lede">For every car on {SITE_NAME} we transcribe the original equipment tire sizes from the owner's manual. That gives us a dataset nobody else publishes: how wheel sizes, tire sizes and spare tires have changed from {y0} to {y1}. It covers {T.models} {makes} models.</p>
+    <nav class="toc" aria-label="On this page"><a href="#key-findings">Key findings</a><a href="#bigger-wheels">Bigger wheels</a><a href="#wheel-sizes">Wheel sizes</a><a href="#tire-sizes">Common tire sizes</a><a href="#spare-tires">Spare tires</a><a href="#methodology">Methodology</a><a href="#cite">Cite</a></nav>
+  </section>
+
+  <section class="st-section" id="key-findings">
+    <h2>Key findings</h2>
+    <ul class="kstats">
+      <KeyStat id="nineteen-inch" value={r(p1.rim19)} source={`${SITE_NAME} data`}>of {p1.label} model years offer <b>19-inch or larger wheels</b>, up from {r(p0.rim19)} in {p0.label}.</KeyStat>
+      <KeyStat id="largest-wheel" value={in1(p1.meanMaxRim)} source={`${SITE_NAME} data`}>average <b>largest wheel</b> offered on a {p1.label} model year, up from {in1(p0.meanMaxRim)} in {p0.label}.</KeyStat>
+      <KeyStat id="base-wheel" value={r(p1.base16)} source={`${SITE_NAME} data`}>of {p1.label} model years still offer a <b>16-inch or smaller wheel</b>, down from {r(p0.base16)} in {p0.label}.</KeyStat>
+      <KeyStat id="most-common-size" value={top.s.code} source={`${SITE_NAME} data`}>is the <b>most common tire size</b>, fitted to {top.n} model years. We found {T.distinctSizes} different original equipment sizes.</KeyStat>
+      <KeyStat id="spare-tire" value={r(p1.spare)} source={`${SITE_NAME} data`}>of {p1.label} owner's manuals list a <b>spare tire</b>, down from {r(p0.spare)} in {p0.label}.</KeyStat>
+      <KeyStat id="biggest" value={`${T.biggest.maxRim} in`} source={`${SITE_NAME} data`}>is the largest wheel in our data, on the <b>{T.biggest.year} {T.biggest.make} {T.biggest.model}</b>.</KeyStat>
+    </ul>
+  </section>
+
+  <section class="st-section" id="bigger-wheels">
+    <h2>Wheels are getting bigger</h2>
+    <p>A model year can offer several wheel sizes across its trims. We look at the largest and smallest wheel each model year offers.</p>
+    <Bars id="nineteen-inch-by-period" caption="Share of model years offering 19-inch or larger wheels" rows={periodRows} valueLabel="Share of model years" extraLabel="Model years" />
+    <Bars id="nineteen-inch-by-year" caption="Share of model years offering 19-inch or larger wheels, by model year" rows={yearRows} valueLabel="Share of model years" extraLabel="Model years" />
+  </section>
+
+  <section class="st-section" id="wheel-sizes">
+    <h2>Most common wheel sizes</h2>
+    <p>Share of model years that offer each wheel diameter on at least one trim.</p>
+    <Bars id="wheel-diameters" caption="Share of model years offering each wheel diameter" rows={rimRows} valueLabel="Share of model years" />
+  </section>
+
+  <section class="st-section" id="tire-sizes">
+    <h2>Most common tire sizes</h2>
+    <Bars id="common-tire-sizes" caption="Original equipment tire sizes fitted to the most model years" rows={T.topSizes.map((x) => ({ label: x.s.code, value: x.n }))} format="count" valueLabel="Model years" />
+    <p class="st-small">See every car that uses a size: {T.topSizes.slice(0, 5).map((x, i) => (<>{i > 0 && ' · '}<a href={`/sizes/${x.s.slug}/`}>{x.s.code}</a></>))}</p>
+  </section>
+
+  <section class="st-section" id="spare-tires">
+    <h2>Spare tires are disappearing</h2>
+    <p>Share of owner's manuals that list a spare tire size. Cars without one usually come with a tire repair kit, and some trims of the same model may differ.</p>
+    <Bars id="spare-tire-by-period" caption="Share of owner's manuals listing a spare tire size" rows={spareRows} valueLabel="Share of manuals" extraLabel="Model years" />
+  </section>
+
+  <section class="st-section st-faq" id="faq"><h2>Questions</h2>{faq.map(([q, a]) => (<div><h3>{q}</h3><p>{a}</p></div>))}</section>
+
+  <section class="st-section methods" id="methodology">
+    <h2>Methodology</h2>
+    <p>Each model year on {SITE_NAME} is transcribed from the tire section of the official owner's manual: every original equipment size, its position (front, rear or all) and the recommended pressure. Temporary spare sizes are counted only for the spare tire figures. Wheel diameter is the rim size in the tire code (the 17 in 215/55R17).</p>
+    <p>The data covers {makes} only, model years {y0} to {y1}, and some makes and years are better represented than others. It describes the cars we cover, not sales: a model year offering a 19-inch wheel may sell mostly on smaller ones. We add manuals over time and these figures update with them.</p>
+    <h3>Sources</h3>
+    <ul class="st-small"><li>{SITE_NAME}, tire data transcribed from manufacturers' owner's manuals. <a href="/sources/">Sources and method</a>.</li><li><a href="/data/wheel-sizes-by-model-year.csv" download>Download wheel and tire sizes by model year (CSV)</a>.</li></ul>
+  </section>
+
+  <Cite title="Wheel and Tire Size Trends" path={path} />
+  <section class="st-section"><h2>More statistics</h2><ul class="st-links"><li><a href="/statistics/tire-pressure/">Recommended tire pressure statistics</a></li><li><a href="/statistics/tire-recalls/">Tire recall and complaint statistics</a></li><li><a href="/statistics/">All statistics</a></li></ul></section>
+</Base>
