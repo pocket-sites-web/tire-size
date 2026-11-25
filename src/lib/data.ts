@@ -224,3 +224,47 @@ export function pressureSummary(rows: TireRow[]): string | null {
   const same = rows.every((r) => !r.pressure_psi_front || !r.pressure_psi_rear || r.pressure_psi_front === r.pressure_psi_rear);
   return same ? `${span(f)} depending on size` : `${span(f)} front, ${span(b)} rear depending on size`;
 }
+
+// ---- Year-to-year comparison -------------------------------------------------------------
+const rowKey = (r: TireRow) => [parseSize(r.size)?.code, r.position, r.load_index, r.speed_rating, r.pressure_psi_front, r.pressure_psi_rear].join('|');
+const yearFingerprint = (y: YearPage) => JSON.stringify([...y.road, ...y.spare].map(rowKey).sort());
+
+export interface YearRun { from: number; to: number }
+
+// Consecutive years with identical factory sizes, ratings and pressures, oldest first.
+export function yearRuns(m: Model): YearRun[] {
+  const ys = [...m.years].sort((a, b) => a.year - b.year);
+  const runs: (YearRun & { fp: string })[] = [];
+  for (const y of ys) {
+    const fp = yearFingerprint(y);
+    const r = runs[runs.length - 1];
+    if (r && r.to === y.year - 1 && r.fp === fp) r.to = y.year;
+    else runs.push({ from: y.year, to: y.year, fp });
+  }
+  return runs.map(({ from, to }) => ({ from, to }));
+}
+
+// A year page with the same data as the year before repeats it word for word. It stays on the
+// site for visitors but is noindexed so Google indexes the first year of each run.
+export function sameAsYear(m: Model, y: YearPage): number | null {
+  const run = yearRuns(m).find((r) => y.year >= r.from && y.year <= r.to)!;
+  return run.from === y.year ? null : run.from;
+}
+
+const codesOf = (y: YearPage) => [...new Set(y.road.map((r) => parseSize(r.size)!.code))];
+
+// Road sizes added and dropped compared with an earlier year.
+export function sizeChanges(prev: YearPage, cur: YearPage) {
+  const a = codesOf(prev), c = codesOf(cur);
+  return { added: c.filter((x) => !a.includes(x)), dropped: a.filter((x) => !c.includes(x)) };
+}
+
+// Other model-years on the same size, newest first, one per model.
+export function sameSizeCars(code: string, not: { make: string; model: string }, limit = 8): YearPage[] {
+  const seen = new Set<string>();
+  return getYearPages()
+    .filter((y) => !(y.make === not.make && y.model === not.model) && codesOf(y).includes(code))
+    .sort((a, b) => b.year - a.year)
+    .filter((y) => { const k = `${y.make}|${y.model}`; if (seen.has(k)) return false; seen.add(k); return true; })
+    .slice(0, limit);
+}

@@ -2,7 +2,7 @@
 import Base from '../../../../layouts/Base.astro';
 import SizeCard from '../../../../components/SizeCard.astro';
 import Source from '../../../../components/Source.astro';
-import { getModels, parseSize, listSizes, yearHref, pressureSummary, type Model, type YearPage } from '../../../../lib/data';
+import { getModels, parseSize, listSizes, yearHref, pressureSummary, dims, sizeHref, yearRuns, sameAsYear, sizeChanges, sameSizeCars, type Model, type YearPage } from '../../../../lib/data';
 import { SITE_URL } from '../../../../lib/site';
 
 export function getStaticPaths() {
@@ -22,12 +22,22 @@ const answer = y.staggered
   : one
     ? `The ${name} takes ${codes[0]} tires.`
     : `The ${name} came with ${listSizes(codes)} tires, depending on the trim and wheel size.`;
+const runAt = yearRuns(m).find((r) => y.year >= r.from && y.year <= r.to)!;
+// The first page of a multi-year run covers the repeated years too, so its title names them.
+const titleName = runAt.from === y.year && runAt.to > y.year ? `${runAt.from}-${runAt.to} ${y.make} ${y.model}` : name;
 const title = one && !y.staggered
-  ? `${name} Tire Size: ${codes[0]} (Factory Spec & Pressure)`
-  : `${name} Tire Size: ${codes.length} Factory Sizes & Pressures`;
+  ? `${titleName} Tire Size: ${codes[0]} (Factory Spec & Pressure)`
+  : `${titleName} Tire Size: ${codes.length} Factory Sizes & Pressures`;
 const description = `${answer} Factory sizes, load and speed ratings${pressure ? ', tire pressure' : ''} and spare from the owner's manual.`;
 const idx = m.years.findIndex((x) => x.year === y.year);
 const near = m.years.slice(Math.max(0, idx - 4), idx + 5);
+const run = yearRuns(m).find((r) => y.year >= r.from && y.year <= r.to)!;
+const dupOf = sameAsYear(m, y);
+const prev = m.years[idx + 1]; // years are newest first
+const delta = prev ? sizeChanges(prev, y) : null;
+const sized = codes.map((c) => ({ c, d: dims(parseSize(c)!) })).sort((a, b) => a.d.diameterMm - b.d.diameterMm);
+const base = sized[0];
+const sameCars = sameSizeCars(codes[0], y);
 const faq = [
   { q: `What size tires does a ${name} have?`, a: answer },
   !one || y.staggered
@@ -46,12 +56,15 @@ const jsonLd = [
   ] },
 ];
 ---
-<Base title={title} description={description} jsonLd={jsonLd}>
+<Base title={title} description={description} jsonLd={jsonLd} noindex={dupOf !== null}>
   <section>
     <p class="crumbs"><a href={`/${y.makeSlug}/`}>{y.make}</a> / <a href={`/${y.makeSlug}/${y.modelSlug}/`}>{y.model}</a> / {y.year}</p>
     <h1>{name} Tire Size</h1>
     <p class="lede">{answer}{pressure && <> Recommended cold pressure: <strong>{pressure}</strong>.</>}</p>
     {(!one || y.staggered) && <p>Not sure which one you have? Read the size off your tire's sidewall, or check the label on the driver's door jamb. <a href="/how-to-read-tire-size/">How to read a tire size</a>.</p>}
+    {run.from !== run.to && (
+      <p class="small"><strong>Same specs {run.from} to {run.to}.</strong> The {y.make} {y.model} kept the same factory sizes, ratings and pressures in every year from {run.from} to {run.to}.{dupOf !== null && <> The full write-up is on the <a href={`/${y.makeSlug}/${y.modelSlug}/${dupOf}/`}>{dupOf} {y.model} page</a>.</>}</p>
+    )}
     <Source y={y} />
   </section>
 
@@ -65,6 +78,47 @@ const jsonLd = [
       <h2>Spare tire</h2>
       <div class="cards">{y.spare.map((r) => <SizeCard row={r} make={y.make} model={y.model} year={y.year} />)}</div>
     </section>
+  )}
+
+  {sized.length > 1 && (
+  <section>
+    <h2>How the {y.year} {y.model} sizes compare</h2>
+    <p>Each trim's size has a slightly different overall diameter, which is why you should stick to the size for your wheel. Compared with the smallest, {base.c}:</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Size</th><th>Overall diameter</th><th>Revs per mile</th><th>Difference</th></tr></thead>
+        <tbody>
+          {sized.map(({ c, d }) => (
+            <tr><td><a href={sizeHref(c)}>{c}</a></td><td>{d.diameterIn} in ({d.diameterMm} mm)</td><td>{d.revsPerMile}</td><td>{c === base.c ? '–' : `+${(((d.diameterMm - base.d.diameterMm) / base.d.diameterMm) * 100).toFixed(1)}%`}</td></tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <p class="small muted">Nominal figures for a new tire, worked out from the size code. Tire shops generally keep a swap within about 3% of the original diameter.</p>
+  </section>
+  )}
+
+  {prev && delta && (
+  <section>
+    <h2>Changes from the {prev.year} {y.model}</h2>
+    {delta.added.length === 0 && delta.dropped.length === 0 ? (
+      <p>Same factory sizes as the <a href={yearHref(prev)}>{prev.year} {y.model}</a>{run.from === y.year ? ', though a rating, pressure or the spare differs' : ''}.</p>
+    ) : (
+      <p>
+        {delta.added.length > 0 && <>New for {y.year}: {delta.added.map((c, i) => <>{i > 0 && ', '}<a href={sizeHref(c)}>{c}</a></>)}. </>}
+        {delta.dropped.length > 0 && <>No longer listed: {delta.dropped.map((c, i) => <>{i > 0 && ', '}<a href={sizeHref(c)}>{c}</a></>)}. </>}
+        Compared with the <a href={yearHref(prev)}>{prev.year} {y.model}</a>.
+      </p>
+    )}
+  </section>
+  )}
+
+  {sameCars.length > 0 && (
+  <section>
+    <h2>Other cars on {codes[0]}</h2>
+    <p class="small muted">Recent models that came with the same size from the factory.</p>
+    <ul class="link-grid">{sameCars.map((o) => <li><a href={yearHref(o)}>{o.year} {o.make} {o.model}</a></li>)}</ul>
+  </section>
   )}
 
   <section class="faq">

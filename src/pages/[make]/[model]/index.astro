@@ -1,6 +1,6 @@
 ---
 import Base from '../../../layouts/Base.astro';
-import { getMakes, parseSize, listSizes, sizeHref, yearHref, yearRange, type Model } from '../../../lib/data';
+import { getMakes, parseSize, listSizes, sizeHref, yearHref, yearRange, dims, yearRuns, type Model } from '../../../lib/data';
 import { SITE_URL } from '../../../lib/site';
 
 export function getStaticPaths() {
@@ -11,6 +11,12 @@ const name = `${m.make} ${m.model}`;
 const range = yearRange(m);
 const latest = m.years[0];
 const latestCodes = [...new Set(latest.road.map((r) => parseSize(r.size)!.code))];
+const runs = yearRuns(m);
+const allSizes = m.sizes.map((c) => {
+  const used = m.years.filter((y) => y.road.some((r) => parseSize(r.size)!.code === c)).map((y) => y.year);
+  return { c, d: dims(parseSize(c)!), from: Math.min(...used), to: Math.max(...used), n: used.length };
+}).sort((a, b) => a.d.diameterMm - b.d.diameterMm);
+const span = (a: number, b: number) => (a === b ? `${a}` : `${a} to ${b}`);
 const title = `${name} Tire Size by Year (${range}): Every Factory Size`;
 const description = `${name} tire sizes for every year from ${range}: ${listSizes(m.sizes.slice(0, 4))}${m.sizes.length > 4 ? ' and more' : ''}. Factory specs from the owner's manual.`;
 const jsonLd = [{ '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
@@ -52,7 +58,17 @@ const jsonLd = [{ '@context': 'https://schema.org', '@type': 'BreadcrumbList', i
 
   <section>
     <h2>Every size used on the {m.model}</h2>
-    <ul class="link-grid">{m.sizes.map((c) => <li><a href={sizeHref(c)}>{c}</a></li>)}</ul>
+    <p>{m.sizes.length === 1 ? `Every ${m.model} we have uses the same size.` : `${m.sizes.length} factory sizes across ${m.years.length} years, smallest to largest.`} {runs.length > 1 ? `The specs change ${runs.length - 1} ${runs.length === 2 ? 'time' : 'times'} over the years.` : ''}</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Size</th><th>Years</th><th>Overall diameter</th><th>Revs per mile</th></tr></thead>
+        <tbody>
+          {allSizes.map((x) => (
+            <tr><td><a href={sizeHref(x.c)}>{x.c}</a></td><td>{span(x.from, x.to)}{x.n < x.to - x.from + 1 ? ' (some years)' : ''}</td><td>{x.d.diameterIn} in</td><td>{x.d.revsPerMile}</td></tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   </section>
 
   <section>
